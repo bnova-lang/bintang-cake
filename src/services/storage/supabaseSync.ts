@@ -1,8 +1,8 @@
 // Cloud Database Sync Service (Supabase Integration)
 // Keeps all devices (laptops, mobile phones) 100% synchronized in real-time.
 
-const SUPABASE_URL = 'https://kjvgurhrnkkssmncjnil.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_DC4N0A1kLvJ6471YmgTDHA_K5mvY9TM';
+const SUPABASE_URL = 'https://pgpomuulvxgygogmmipp.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBncG9tdXVsdnhneWdvZ21taXBwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQzMDY3ODksImV4cCI6MjEwOTg4Mjc4OX0.izdr8asgaNJCXL91wvhibBW63sp35QVSht6IZzh9byQ';
 
 export class SupabaseSyncService {
   private static isInitialized = false;
@@ -72,11 +72,48 @@ export class SupabaseSyncService {
         window.dispatchEvent(new Event('bcc-products-updated'));
         window.dispatchEvent(new Event('bcc-categories-updated'));
         return true;
+      } else if (Array.isArray(data) && data.length === 0) {
+        // Table exists in Supabase, but is brand new / empty.
+        // Automatically populate cloud with local store data!
+        await this.syncAllLocalToCloud();
+        this.isInitialized = true;
+        return true;
       }
       return false;
     } catch {
       return false;
     }
+  }
+
+  /**
+   * Upload all local store data to Supabase (Initial seed/sync to cloud)
+   */
+  static async syncAllLocalToCloud(): Promise<boolean> {
+    const keysToSync = [
+      'categories',
+      'products',
+      'storeSettings',
+      'content',
+      'deliveryAreas',
+      'paymentSettings',
+      'gallery',
+      'adminUsers',
+    ];
+
+    let successCount = 0;
+    for (const key of keysToSync) {
+      const raw = localStorage.getItem(`bcc:v1:${key}`);
+      if (raw) {
+        try {
+          const parsed = JSON.parse(raw);
+          const ok = await this.pushItem(key, parsed);
+          if (ok) successCount++;
+        } catch {
+          // ignore
+        }
+      }
+    }
+    return successCount > 0;
   }
 
   static isCloudConnected(): boolean {
