@@ -35,11 +35,11 @@ export const Header: React.FC = () => {
 
   const navLinks = [
     { label: 'Beranda', to: '/' },
-    { label: 'Katalog Produk', to: '/produk' },
-    { label: 'Paket Spesial', to: '/spesial' },
+    { label: 'Toko', to: '/produk' },
+    { label: 'Produk', to: '/kategori/cat-cake' },
+    { label: 'Tentang', to: '/tentang-kami' },
     { label: 'Galeri', to: '/galeri' },
-    { label: 'Cara Memesan', to: '/cara-memesan' },
-    { label: 'Tentang Kami', to: '/tentang-kami' },
+    { label: 'Spesial', to: '/spesial' },
   ];
 
   return (
@@ -64,7 +64,7 @@ export const Header: React.FC = () => {
                 width: '42px',
                 height: '42px',
                 objectFit: 'contain',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-full)',
                 backgroundColor: 'rgba(255,255,255,0.08)',
                 padding: '2px',
                 boxShadow: 'var(--shadow-sm)',
@@ -77,7 +77,7 @@ export const Header: React.FC = () => {
                 height: '40px',
                 backgroundColor: 'var(--gold-500)',
                 color: 'var(--brown-900)',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-full)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -89,10 +89,20 @@ export const Header: React.FC = () => {
           )}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{ fontFamily: 'var(--font-serif)', fontSize: '18px', fontWeight: 700, color: 'var(--gold-500)', lineHeight: 1.1 }}>
-              Bintang
+              Bintang Cake & Cookies
             </span>
-            <span style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.9 }}>
-              Cake & Cookies
+            <span
+              className="brand-tagline"
+              style={{
+                fontFamily: 'var(--font-serif)',
+                fontStyle: 'italic',
+                fontSize: '12px',
+                color: 'rgba(255, 248, 234, 0.85)',
+                lineHeight: 1.2,
+                marginTop: '1px',
+              }}
+            >
+              Partner to Enjoy Your Day
             </span>
           </div>
         </Link>
@@ -142,39 +152,39 @@ export const Header: React.FC = () => {
             <Search size={20} />
           </button>
 
-          {/* Cart Icon & Badge */}
+          {/* White Pill Button: Pesan (Sesuai Desain Mockup) */}
           <Link
             to="/keranjang"
-            aria-label="Keranjang Belanja"
+            aria-label="Pesan dan Keranjang Belanja"
             style={{
-              position: 'relative',
-              width: '40px',
-              height: '40px',
+              backgroundColor: '#FFFFFF',
+              color: 'var(--brown-900)',
+              fontWeight: 700,
+              fontSize: '14px',
+              padding: '7px 20px',
               borderRadius: 'var(--radius-full)',
-              color: 'var(--text-on-dark)',
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              gap: '6px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+              transition: 'transform 0.15s, background-color 0.15s',
             }}
           >
-            <ShoppingBag size={22} />
+            <span>Pesan</span>
             {totalItems > 0 && (
               <span
                 style={{
-                  position: 'absolute',
-                  top: '4px',
-                  right: '4px',
-                  backgroundColor: 'var(--gold-500)',
-                  color: 'var(--brown-900)',
-                  fontSize: '11px',
-                  fontWeight: 700,
+                  backgroundColor: '#F58220',
+                  color: '#FFFFFF',
                   borderRadius: 'var(--radius-full)',
+                  padding: '1px 6px',
+                  fontSize: '11px',
+                  fontWeight: 800,
                   minWidth: '18px',
                   height: '18px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  padding: '0 4px',
                 }}
               >
                 {totalItems}
@@ -182,66 +192,26 @@ export const Header: React.FC = () => {
             )}
           </Link>
 
-          {/* Account / Admin Link */}
-          {session ? (
-            <Link
-              to={isAdmin ? '/admin' : '/akun'}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                fontSize: '13px',
-                fontWeight: 600,
-                color: 'var(--gold-500)',
-                backgroundColor: 'rgba(255,255,255,0.08)',
-                padding: '6px 12px',
-                borderRadius: 'var(--radius-full)',
-              }}
-            >
-              <User size={16} />
-              <span style={{ maxWidth: '90px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {isAdmin ? 'Admin' : session.userName}
-              </span>
-            </Link>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Link
-                to="/masuk"
-                style={{
-                  fontSize: '13px',
-                  fontWeight: 600,
-                  color: 'var(--brown-900)',
-                  backgroundColor: 'var(--gold-500)',
-                  padding: '7px 14px',
-                  borderRadius: 'var(--radius-full)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '5px',
-                }}
-              >
-                <User size={15} />
-                <span>Masuk</span>
-              </Link>
-              <Link
-                to="/admin"
-                title="Buka Dashboard Admin"
-                style={{
-                  fontSize: '12px',
-                  fontWeight: 700,
-                  color: 'var(--gold-500)',
-                  border: '1px solid var(--gold-500)',
-                  padding: '6px 12px',
-                  borderRadius: 'var(--radius-full)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                }}
-              >
-                <ShieldCheck size={14} />
-                <span>Admin</span>
-              </Link>
-            </div>
-          )}
+          {/* User Profile Avatar Circle (Sesuai Desain Mockup) */}
+          <Link
+            to={session ? (isAdmin ? '/admin' : '/akun') : '/masuk'}
+            aria-label={session ? (isAdmin ? 'Admin Dashboard' : session.userName) : 'Akun Pengguna'}
+            title={session ? (isAdmin ? 'Admin Dashboard' : session.userName) : 'Masuk / Akun'}
+            style={{
+              width: '38px',
+              height: '38px',
+              borderRadius: 'var(--radius-full)',
+              border: '1.5px solid rgba(255, 255, 255, 0.55)',
+              backgroundColor: session ? 'rgba(242, 193, 78, 0.25)' : 'rgba(255, 255, 255, 0.12)',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+            }}
+          >
+            <User size={19} />
+          </Link>
 
           {/* Mobile Menu Button */}
           <button
@@ -349,6 +319,9 @@ export const Header: React.FC = () => {
       <PromoTicker />
 
       <style>{`
+        @media (max-width: 520px) {
+          .brand-tagline { display: none !important; }
+        }
         @media (min-width: 992px) {
           .desktop-nav { display: block !important; }
           .mobile-menu-btn { display: none !important; }
