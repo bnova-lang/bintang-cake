@@ -43,7 +43,8 @@ import {
 import { generateOrderNumber } from '@/utils/format';
 
 const sanitizeCategory = (c: Category): Category => {
-  if (c.id === 'cat-lapis' && (!c.image || c.image.includes('photo-1535141192574'))) {
+  // Only fallback if image specifically contains the broken photo ID from initial seed
+  if (c.image && c.image.includes('photo-1535141192574')) {
     return {
       ...c,
       image: 'https://images.unsplash.com/photo-1605138693981-6c8a5ea87796?w=600&auto=format&fit=crop&q=80',
@@ -614,20 +615,30 @@ export class LocalStorageSessionRepository implements ISessionRepository {
   }
 }
 
+const CURRENT_SEED_VERSION = 5;
+
 /**
  * Initializes database with demo seeds if not already initialized
  */
 export function initializeSeedData(forceReset = false): void {
   const meta = LocalStorageService.getItem<{ schemaVersion: number; seedVersion?: number }>('meta');
 
-  if (meta && meta.seedVersion === 3 && !forceReset) {
-    return; // Already initialized with seed v3
+  // If already initialized with current seed version or higher, NEVER overwrite user's saved data!
+  if (meta && (meta.seedVersion || 0) >= CURRENT_SEED_VERSION && !forceReset) {
+    return;
   }
 
-  if (!meta || forceReset) {
+  // Check if user already has data in storage before writing seed data
+  const existingCategories = LocalStorageService.getItem<Category[]>('categories');
+  const existingProducts = LocalStorageService.getItem<Product[]>('products');
+  const existingStore = LocalStorageService.getItem<StoreSettings>('storeSettings');
+  const existingContent = LocalStorageService.getItem<Content>('content');
+
+  // Only seed fresh if no data exists at all OR if user explicitly requested forceReset
+  if (!meta && !existingCategories && !existingProducts && !existingContent) {
     LocalStorageService.setItem('meta', {
       schemaVersion: 1,
-      seedVersion: 3,
+      seedVersion: CURRENT_SEED_VERSION,
       seededAt: new Date().toISOString(),
     });
 
@@ -648,138 +659,57 @@ export function initializeSeedData(forceReset = false): void {
     return;
   }
 
-  // Update existing storage to seed v3 (correct PBKDF2 hashes + fixed working Lapis Legit images)
-  const existingCustomers = LocalStorageService.getItem<Customer[]>('customers') || [];
-  const demoCustIdx = existingCustomers.findIndex(c => c.id === 'cust-demo-1' || c.whatsapp === '6282158739760');
-  if (demoCustIdx >= 0) {
-    existingCustomers[demoCustIdx].passwordHash = SEED_CUSTOMERS[0].passwordHash;
-    existingCustomers[demoCustIdx].passwordSalt = SEED_CUSTOMERS[0].passwordSalt;
-    LocalStorageService.setItem('customers', existingCustomers);
-  } else {
-    existingCustomers.unshift(SEED_CUSTOMERS[0]);
-    LocalStorageService.setItem('customers', existingCustomers);
-  }
+  // Preserve existing data! Only fill in missing keys:
+  if (!existingCategories) LocalStorageService.setItem('categories', SEED_CATEGORIES);
+  if (!existingProducts) LocalStorageService.setItem('products', SEED_PRODUCTS);
+  if (!existingStore) LocalStorageService.setItem('storeSettings', SEED_STORE_SETTINGS);
+  if (!existingContent) LocalStorageService.setItem('content', SEED_CONTENT);
+  if (!LocalStorageService.getItem('deliveryAreas')) LocalStorageService.setItem('deliveryAreas', SEED_DELIVERY_AREAS);
+  if (!LocalStorageService.getItem('paymentSettings')) LocalStorageService.setItem('paymentSettings', SEED_PAYMENT_SETTINGS);
+  if (!LocalStorageService.getItem('adminUsers')) LocalStorageService.setItem('adminUsers', SEED_ADMIN_USERS);
+  if (!LocalStorageService.getItem('customers')) LocalStorageService.setItem('customers', SEED_CUSTOMERS);
 
-  const existingAdmins = LocalStorageService.getItem<AdminUser[]>('adminUsers') || [];
-  const demoAdminIdx = existingAdmins.findIndex(a => a.id === 'admin-1' || a.username === 'admin');
-  if (demoAdminIdx >= 0) {
-    existingAdmins[demoAdminIdx].passwordHash = SEED_ADMIN_USERS[0].passwordHash;
-    existingAdmins[demoAdminIdx].passwordSalt = SEED_ADMIN_USERS[0].passwordSalt;
-    LocalStorageService.setItem('adminUsers', existingAdmins);
-  } else {
-    existingAdmins.unshift(SEED_ADMIN_USERS[0]);
-    LocalStorageService.setItem('adminUsers', existingAdmins);
-  }
-
-  // Fix Lapis Legit images in existing LocalStorage
+  // One-time migration for legacy seeds (only run if seedVersion < CURRENT_SEED_VERSION):
   const workingLapisImg = 'https://images.unsplash.com/photo-1605138693981-6c8a5ea87796?w=600&auto=format&fit=crop&q=80';
   const workingLapisProductImg = 'https://images.unsplash.com/photo-1605138693981-6c8a5ea87796?w=800&auto=format&fit=crop&q=80';
 
-  const categories = LocalStorageService.getItem<Category[]>('categories') || [];
-  let catUpdated = false;
-  categories.forEach(cat => {
-    if (cat.id === 'cat-lapis' || (cat.image && cat.image.includes('photo-1535141192574'))) {
-      cat.image = workingLapisImg;
-      catUpdated = true;
-    }
-  });
-  if (catUpdated) {
-    LocalStorageService.setItem('categories', categories);
+  // Only fix broken unsplash URLs if they literally still point to the 404 image 'photo-1535141192574'
+  const categories = LocalStorageService.getItem<Category[]>('categories');
+  if (categories) {
+    let catUpdated = false;
+    categories.forEach(cat => {
+      if (cat.image && cat.image.includes('photo-1535141192574')) {
+        cat.image = workingLapisImg;
+        catUpdated = true;
+      }
+    });
+    if (catUpdated) LocalStorageService.setItem('categories', categories);
   }
 
-  const products = LocalStorageService.getItem<Product[]>('products') || [];
-  let prodUpdated = false;
-  products.forEach(p => {
-    if (p.id === 'prod-lapis-legit' || p.categoryId === 'cat-lapis') {
+  const products = LocalStorageService.getItem<Product[]>('products');
+  if (products) {
+    let prodUpdated = false;
+    products.forEach(p => {
       p.images.forEach(img => {
-        if (!img.url || img.url.includes('photo-1535141192574')) {
+        if (img.url && img.url.includes('photo-1535141192574')) {
           img.url = workingLapisProductImg;
           prodUpdated = true;
         }
       });
-    }
-  });
-  if (prodUpdated) {
-    LocalStorageService.setItem('products', products);
+    });
+    if (prodUpdated) LocalStorageService.setItem('products', products);
   }
 
-  const gallery = LocalStorageService.getItem<GalleryItem[]>('gallery') || [];
-  let galUpdated = false;
-  gallery.forEach(g => {
-    if (g.imageUrl && g.imageUrl.includes('photo-1535141192574')) {
-      g.imageUrl = workingLapisProductImg;
-      galUpdated = true;
-    }
-  });
-  if (galUpdated) {
-    LocalStorageService.setItem('gallery', gallery);
-  }
-
-  const existingContent = LocalStorageService.getItem<Content>('content');
-  if (existingContent && existingContent.tickerActive === undefined) {
-    existingContent.tickerActive = true;
-    existingContent.tickerTheme = 'gold';
-    existingContent.tickerBadge = '✨ PROMO SPESIAL TOKO';
-    existingContent.tickerText = '✨ Buka Setiap Hari: 08.00 - 20.00 WITA • Nikmati Kelezatan Cake, Cookies, dan Hampers Eksklusif Bintang Cake & Cookies • Pengiriman Wilayah Samarinda & Balikpapan';
-    existingContent.tickerSpeed = 'medium';
-    existingContent.tickerLink = '/spesial';
-    LocalStorageService.setItem('content', existingContent);
-  }
-
-  // Seed v4: Add Bank SeaBank, clean demo labels from payment channels & enable promo reward
-  const payments = LocalStorageService.getItem<PaymentSetting[]>('paymentSettings') || [];
-  let payUpdated = false;
-
-  // Ensure SeaBank exists
-  if (!payments.some(p => p.id === 'pay-seabank' || p.bankName?.toLowerCase().includes('seabank'))) {
-    payments.unshift(SEED_PAYMENT_SETTINGS[0]);
-    payUpdated = true;
-  }
-
-  // Clean '(DEMO)' strings from payment settings
-  payments.forEach(p => {
-    if (p.bankName?.includes('(DEMO)')) {
-      p.bankName = p.bankName.replace('(DEMO)', '').trim();
-      payUpdated = true;
-    }
-    if (p.accountName?.includes('(DEMO)')) {
-      p.accountName = p.accountName.replace('(DEMO)', '').trim();
-      payUpdated = true;
-    }
-    if (p.accountNumber?.includes('(DEMO)')) {
-      p.accountNumber = p.accountNumber.replace('(DEMO)', '').trim();
-      payUpdated = true;
-    }
-    if (p.accountHolder?.includes('DEMO')) {
-      p.accountHolder = p.accountHolder.replace('DEMO', '').trim();
-      payUpdated = true;
-    }
-    if (!p.type && p.method) {
-      p.type = p.method === 'transfer_bank' ? 'bank_transfer' : p.method;
-      payUpdated = true;
-    }
-    if (!p.accountName) {
-      p.accountName = p.bankName || p.accountHolder;
-      payUpdated = true;
-    }
-    p.isDemo = false;
-  });
-
-  if (payUpdated) {
-    LocalStorageService.setItem('paymentSettings', payments);
-  }
-
-  // Ensure StoreSettings has Promo Souvenir/Discount defaults
-  const store = LocalStorageService.getItem<StoreSettings>('storeSettings');
-  if (store && store.promoRewardActive === undefined) {
-    store.promoRewardActive = true;
-    store.promoRewardType = 'souvenir';
-    store.promoMinSpend = 750000;
-    store.promoSouvenirName = 'Souvenir Eksklusif Bintang Cake (Toples Mini Cookies Cantik)';
-    store.promoSouvenirDescription = 'Hadiah spesial terima kasih untuk pembelian di atas Rp 750.000';
-    store.promoDiscountType = 'fixed';
-    store.promoDiscountValue = 0;
-    LocalStorageService.setItem('storeSettings', store);
+  const gallery = LocalStorageService.getItem<GalleryItem[]>('gallery');
+  if (gallery) {
+    let galUpdated = false;
+    gallery.forEach(g => {
+      if (g.imageUrl && g.imageUrl.includes('photo-1535141192574')) {
+        g.imageUrl = workingLapisProductImg;
+        galUpdated = true;
+      }
+    });
+    if (galUpdated) LocalStorageService.setItem('gallery', gallery);
   }
 
   // Ensure Admin credentials match: username 'bintang', password 'Nadin13'
@@ -787,11 +717,13 @@ export function initializeSeedData(forceReset = false): void {
   let adminUpdated = false;
   if (admins.length > 0) {
     admins.forEach(a => {
-      a.username = 'bintang';
-      a.passwordHash = '90d4d3a6dd4b63088926628bc27963d9a16630c81440099f5f6e957b31b0e993';
-      a.passwordSalt = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
-      a.name = 'Administrator Bintang Cake';
-      adminUpdated = true;
+      if (a.username !== 'bintang') {
+        a.username = 'bintang';
+        a.passwordHash = '90d4d3a6dd4b63088926628bc27963d9a16630c81440099f5f6e957b31b0e993';
+        a.passwordSalt = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
+        a.name = 'Administrator Bintang Cake';
+        adminUpdated = true;
+      }
     });
   } else {
     admins.push(...SEED_ADMIN_USERS);
@@ -801,9 +733,10 @@ export function initializeSeedData(forceReset = false): void {
     LocalStorageService.setItem('adminUsers', admins);
   }
 
+  // Mark migration as complete
   LocalStorageService.setItem('meta', {
-    ...meta,
-    seedVersion: 5,
+    ...(meta || { schemaVersion: 1 }),
+    seedVersion: CURRENT_SEED_VERSION,
     migratedAt: new Date().toISOString(),
   });
 }

@@ -92,7 +92,7 @@ export const AdminContentPage: React.FC = () => {
       const img = document.createElement('img');
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const maxDim = 1200;
+        const maxDim = 800;
         let w = img.width;
         let h = img.height;
         if (w > h && w > maxDim) {
@@ -106,7 +106,7 @@ export const AdminContentPage: React.FC = () => {
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, w, h);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.84);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
 
         setContent({
           ...content,
@@ -143,7 +143,7 @@ export const AdminContentPage: React.FC = () => {
       const img = document.createElement('img');
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const maxDim = 1000;
+        const maxDim = 800;
         let w = img.width;
         let h = img.height;
         if (w > h && w > maxDim) {
@@ -157,7 +157,7 @@ export const AdminContentPage: React.FC = () => {
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, w, h);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.84);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
 
         setContent({
           ...content,
@@ -239,7 +239,7 @@ export const AdminContentPage: React.FC = () => {
   };
 
   // Universal Image Compressor with HTML5 Canvas (lightweight & crisp)
-  const compressImageFile = (file: File, maxDim: number, quality = 0.82): Promise<string> => {
+  const compressImageFile = (file: File, maxDim: number, quality = 0.70): Promise<string> => {
     return new Promise((resolve, reject) => {
       if (!file.type.startsWith('image/')) {
         reject(new Error('Format berkas harus berupa gambar'));

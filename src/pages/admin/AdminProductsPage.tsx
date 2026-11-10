@@ -132,7 +132,7 @@ export const AdminProductsPage: React.FC = () => {
       const img = document.createElement('img');
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const maxDim = 800;
+        const maxDim = 600;
         let w = img.width;
         let h = img.height;
         if (w > h && w > maxDim) {
@@ -146,7 +146,7 @@ export const AdminProductsPage: React.FC = () => {
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx?.drawImage(img, 0, 0, w, h);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.70);
         setImageUrl(compressedDataUrl);
       };
       img.src = ev.target?.result as string;

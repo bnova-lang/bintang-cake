@@ -59,7 +59,7 @@ export const AdminSettingsPage: React.FC = () => {
       const img = document.createElement('img');
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const maxDim = 500;
+        const maxDim = 300;
         let w = img.width;
         let h = img.height;
         if (w > h && w > maxDim) {
@@ -75,7 +75,7 @@ export const AdminSettingsPage: React.FC = () => {
         if (ctx) {
           ctx.drawImage(img, 0, 0, w, h);
           const format = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-          const quality = format === 'image/png' ? undefined : 0.85;
+          const quality = format === 'image/png' ? undefined : 0.75;
           const compressedDataUrl = canvas.toDataURL(format, quality);
 
           setStore({

@@ -1,5 +1,6 @@
 // LocalStorage Service with Zod validation and safe error handling (SCHEMA.md §2)
 import { z } from 'zod';
+import { indexedDBStorage } from '@/services/storage/indexedDB';
 
 export const STORAGE_PREFIX = 'bcc:v1:';
 
@@ -48,10 +49,14 @@ export class LocalStorageService {
       }
       const serialized = JSON.stringify(value);
       localStorage.setItem(fullKey, serialized);
+      // Asynchronously mirror to IndexedDB for safety
+      if (typeof window !== 'undefined' && window.indexedDB) {
+        indexedDBStorage.setItem(fullKey, serialized).catch(() => {});
+      }
       return true;
     } catch (e: unknown) {
       if (e instanceof Error && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-        console.warn(`[LocalStorage] QuotaExceededError while writing to "${fullKey}". Attempting cleanup.`);
+        console.warn(`[LocalStorage] QuotaExceededError while writing to "${fullKey}". Attempting cleanup and fallback.`);
         // Try to clear any non-essential cache
         try {
           for (let i = 0; i < localStorage.length; i++) {
@@ -60,13 +65,49 @@ export class LocalStorageService {
               localStorage.removeItem(k);
             }
           }
+          const serialized = JSON.stringify(value);
+          localStorage.setItem(fullKey, serialized);
+          if (typeof window !== 'undefined' && window.indexedDB) {
+            indexedDBStorage.setItem(fullKey, serialized).catch(() => {});
+          }
+          return true;
         } catch {
-          // ignore
+          // If LocalStorage quota is strictly exceeded, persist to IndexedDB (500MB+ storage)
+          if (typeof window !== 'undefined' && window.indexedDB) {
+            const serialized = JSON.stringify(value);
+            indexedDBStorage.setItem(fullKey, serialized).catch(() => {});
+            console.info(`[LocalStorage] Successfully persisted "${fullKey}" to IndexedDB fallback.`);
+            return true;
+          }
         }
       } else {
         console.error(`[LocalStorage] Error setting item for key "${fullKey}":`, e);
       }
       return false;
+    }
+  }
+
+  /**
+   * Synchronize keys from IndexedDB back into LocalStorage if missing
+   */
+  static async syncFromIndexedDB(): Promise<void> {
+    if (typeof window === 'undefined' || !window.indexedDB) return;
+    try {
+      const allItems = await indexedDBStorage.getAllItems();
+      for (const [key, raw] of Object.entries(allItems)) {
+        if (key.startsWith(STORAGE_PREFIX) && raw) {
+          const current = localStorage.getItem(key);
+          if (!current) {
+            try {
+              localStorage.setItem(key, raw);
+            } catch {
+              // Ignore quota limit
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('[LocalStorage] Could not sync from IndexedDB:', e);
     }
   }
 
