@@ -17,7 +17,8 @@ export interface ProductVariant {
   id: string;
   name: string;           // Display name (e.g. "Toples 500g")
   packagingType: string;
-  price: number;          // Integer Rupiah
+  price: number;          // Integer Rupiah (Harga Mulai / Harga Terendah)
+  maxPrice?: number;      // Optional: Harga Tertinggi jika produk memiliki rentang harga
   stockQuantity: number;  // >= 0
   active: boolean;
   sortOrder: number;

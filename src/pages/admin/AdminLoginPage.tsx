@@ -30,21 +30,6 @@ export const AdminLoginPage: React.FC = () => {
     }
   };
 
-  const handleDirectDemoLogin = async () => {
-    setError('');
-    setIsLoading(true);
-    setUsername('admin');
-    setPassword('admin-bintang-demo');
-    const res = await loginAdmin('admin', 'admin-bintang-demo');
-    setIsLoading(false);
-    if (res.success) {
-      showToast('Berhasil masuk ke Dashboard Admin!', 'success');
-      navigate('/admin');
-    } else {
-      setError(res.error || 'Gagal masuk akun demo admin.');
-    }
-  };
-
   return (
     <div className="container" style={{ paddingTop: '60px', maxWidth: '440px' }}>
       <div
@@ -126,28 +111,6 @@ export const AdminLoginPage: React.FC = () => {
             }}
           >
             {isLoading ? 'Memverifikasi...' : 'Masuk Dashboard'}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDirectDemoLogin}
-            disabled={isLoading}
-            style={{
-              backgroundColor: 'var(--gold-100)',
-              color: 'var(--brown-900)',
-              border: '1px dashed var(--gold-600)',
-              padding: '10px',
-              borderRadius: 'var(--radius-full)',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-            }}
-          >
-            ⚡ Masuk Langsung Dashboard Admin (admin)
           </button>
         </form>
       </div>

@@ -18,9 +18,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   // Calculate price range
   const activeVariants = product.variants.filter(v => v.active);
-  const prices = activeVariants.map(v => v.price);
-  const minPrice = prices.length ? Math.min(...prices) : 0;
-  const maxPrice = prices.length ? Math.max(...prices) : 0;
+  const minPrices = activeVariants.map(v => v.price);
+  const maxPrices = activeVariants.map(v => (v.maxPrice && v.maxPrice > v.price ? v.maxPrice : v.price));
+  const minPrice = minPrices.length ? Math.min(...minPrices) : 0;
+  const maxPrice = maxPrices.length ? Math.max(...maxPrices) : 0;
 
   // Check stock
   const isPreOrder = product.fulfillmentType === 'pre_order';

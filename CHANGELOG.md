@@ -9,6 +9,13 @@ Kategori: `Ditambahkan`, `Diubah`, `Diperbaiki`, `Dihapus`, `Keamanan`, `Keputus
 ## [Belum dirilis]
 
 ### Ditambahkan
+- **Kolom Rentang Harga Varian (Harga Terendah - Harga Tertinggi) (`/admin/produk`):**
+  - Menambahkan kolom **Harga Tertinggi (Rp)** di samping Harga Terendah pada editor Varian Kemasan & Harga di formulir tambah/edit produk.
+  - Jika kolom harga tertinggi diisi (misal: Min Rp 400.000, Maks Rp 1.500.000), katalog produk (`ProductCard`) dan halaman detail produk (`ProductDetailPage`) akan secara otomatis menampilkan format rentang harga profesional: `Rp 400.000 - Rp 1.500.000`.
+  - Menambahkan field `maxPrice?: number` pada tipe `ProductVariant` (`src/types/index.ts`).
+- **Keamanan Login Admin Ketat (Wajib Username & Password) (`/admin/login`):**
+  - Menghapus tombol jalan pintas demo (*direct login bypass*) pada halaman login admin.
+  - Setiap akses ke Dashboard Admin kini wajib memasukkan kredensial username dan password secara manual guna menjamin keamanan toko.
 - **Fitur Hapus Pesanan pada Kelola Pesanan (`/admin/pesanan`):**
   - Menambahkan tombol aksi **Hapus** pada setiap baris tabel pesanan di samping tombol Detail dan Invoice.
   - Menyediakan modal dialog konfirmasi hapus aman dengan rincian nomor pesanan, nama pembeli, total pembayaran, dan peringatan bahwa tindakan bersifat permanen.

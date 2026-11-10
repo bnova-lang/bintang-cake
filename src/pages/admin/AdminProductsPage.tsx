@@ -101,6 +101,7 @@ export const AdminProductsPage: React.FC = () => {
         name: 'Varian Baru',
         packagingType: 'standard',
         price: 50000,
+        maxPrice: undefined,
         stockQuantity: 10,
         active: true,
         sortOrder: variants.length + 1,
@@ -439,52 +440,85 @@ export const AdminProductsPage: React.FC = () => {
 
             {/* Variants Manager */}
             <div style={{ borderTop: '1px solid var(--cream-300)', paddingTop: '14px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                <h4 style={{ fontSize: '14px', color: 'var(--brown-900)', margin: 0 }}>Varian Kemasan & Harga</h4>
-                <button type="button" onClick={handleAddVariant} style={{ fontSize: '12px', color: 'var(--brown-800)', fontWeight: 700, cursor: 'pointer' }}>+ Tambah Varian</button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div>
+                  <h4 style={{ fontSize: '14px', color: 'var(--brown-900)', margin: 0 }}>Varian Kemasan & Rentang Harga</h4>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    Atur nama varian/kemasan, harga terendah, harga tertinggi (s/d - opsional), dan stok.
+                  </span>
+                </div>
+                <button type="button" onClick={handleAddVariant} style={{ fontSize: '12px', color: 'var(--brown-800)', fontWeight: 700, cursor: 'pointer', backgroundColor: 'var(--cream-200)', padding: '4px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>+ Tambah Varian</button>
+              </div>
+
+              {/* Column Headers */}
+              <div style={{ display: 'flex', gap: '8px', padding: '0 12px 4px 12px', fontSize: '11px', fontWeight: 700, color: 'var(--brown-800)' }}>
+                <span style={{ flex: 2 }}>Nama Kemasan / Varian *</span>
+                <span style={{ flex: 1.2 }}>Harga Terendah (Rp) *</span>
+                <span style={{ flex: 1.2 }}>Harga Tertinggi (Rp)</span>
+                <span style={{ width: '65px' }}>Stok *</span>
+                <span style={{ width: '24px' }}></span>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 {variants.map((v, idx) => (
-                  <div key={v.id} style={{ display: 'flex', gap: '8px', alignItems: 'center', backgroundColor: 'var(--cream-100)', padding: '8px 12px', borderRadius: 'var(--radius-md)' }}>
+                  <div key={v.id} style={{ display: 'flex', gap: '8px', alignItems: 'center', backgroundColor: 'var(--cream-100)', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)' }}>
                     <input
                       type="text"
-                      placeholder="Nama Kemasan (Toples 500g)"
+                      placeholder="Contoh: Paket Custom Base / Toples 500g"
                       value={v.name}
                       onChange={e => {
                         const copy = [...variants];
                         copy[idx].name = e.target.value;
                         setVariants(copy);
                       }}
-                      style={{ flex: 2, padding: '6px', fontSize: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cream-300)' }}
+                      style={{ flex: 2, padding: '7px 8px', fontSize: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cream-300)', backgroundColor: '#fff' }}
                     />
                     <input
                       type="number"
-                      placeholder="Harga (Rp)"
-                      value={v.price}
+                      placeholder="Min (Rp)"
+                      title="Harga Terendah / Mulai"
+                      value={v.price || ''}
                       onChange={e => {
                         const copy = [...variants];
                         copy[idx].price = Number(e.target.value);
                         setVariants(copy);
                       }}
-                      style={{ flex: 1.5, padding: '6px', fontSize: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cream-300)' }}
+                      style={{ flex: 1.2, padding: '7px 8px', fontSize: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cream-300)', backgroundColor: '#fff' }}
+                    />
+                    <input
+                      type="number"
+                      placeholder="Maks (Rp, opsional)"
+                      title="Harga Tertinggi / s/d (kosongkan jika harga tetap)"
+                      value={v.maxPrice || ''}
+                      onChange={e => {
+                        const copy = [...variants];
+                        const val = e.target.value ? Number(e.target.value) : undefined;
+                        copy[idx].maxPrice = val;
+                        setVariants(copy);
+                      }}
+                      style={{ flex: 1.2, padding: '7px 8px', fontSize: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cream-300)', backgroundColor: '#fff' }}
                     />
                     <input
                       type="number"
                       placeholder="Stok"
+                      title="Jumlah Stok"
                       value={v.stockQuantity}
                       onChange={e => {
                         const copy = [...variants];
                         copy[idx].stockQuantity = Number(e.target.value);
                         setVariants(copy);
                       }}
-                      style={{ width: '70px', padding: '6px', fontSize: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cream-300)' }}
+                      style={{ width: '65px', padding: '7px 8px', fontSize: '12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cream-300)', backgroundColor: '#fff' }}
                     />
-                    <button type="button" onClick={() => handleRemoveVariant(v.id)} style={{ color: 'var(--danger-600)', padding: '4px', cursor: 'pointer' }}>
+                    <button type="button" onClick={() => handleRemoveVariant(v.id)} title="Hapus Varian" style={{ color: 'var(--danger-600)', padding: '4px', cursor: 'pointer', background: 'none', border: 'none' }}>
                       <Trash2 size={16} />
                     </button>
                   </div>
                 ))}
+              </div>
+
+              <div style={{ fontSize: '11px', color: 'var(--brown-600)', marginTop: '6px', fontStyle: 'italic' }}>
+                💡 Jika kolom "Harga Tertinggi" diisi (misal Terendah: 400.000, Tertinggi: 1.500.000), di etalase toko akan otomatis tertulis rentang: <b>Rp 400.000 - Rp 1.500.000</b>.
               </div>
             </div>
 

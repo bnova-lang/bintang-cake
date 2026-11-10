@@ -198,7 +198,11 @@ export const ProductDetailPage: React.FC = () => {
 
             {/* Price Display */}
             <div style={{ fontSize: '26px', fontWeight: 700, color: 'var(--brown-800)', fontFamily: 'var(--font-sans)', margin: '8px 0' }}>
-              {selectedVariant ? formatRupiah(selectedVariant.price) : 'Rp 0'}
+              {selectedVariant
+                ? selectedVariant.maxPrice && selectedVariant.maxPrice > selectedVariant.price
+                  ? `${formatRupiah(selectedVariant.price)} - ${formatRupiah(selectedVariant.maxPrice)}`
+                  : formatRupiah(selectedVariant.price)
+                : 'Rp 0'}
             </div>
           </div>
 
@@ -292,7 +296,9 @@ export const ProductDetailPage: React.FC = () => {
                         {variant.name}
                       </div>
                       <div style={{ fontSize: '13px', color: 'var(--brown-800)', fontWeight: 600, marginTop: '2px' }}>
-                        {formatRupiah(variant.price)}
+                        {variant.maxPrice && variant.maxPrice > variant.price
+                          ? `${formatRupiah(variant.price)} - ${formatRupiah(variant.maxPrice)}`
+                          : formatRupiah(variant.price)}
                       </div>
                     </button>
                   );
