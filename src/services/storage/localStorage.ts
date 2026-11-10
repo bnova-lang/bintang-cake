@@ -1,6 +1,7 @@
 // LocalStorage Service with Zod validation and safe error handling (SCHEMA.md §2)
 import { z } from 'zod';
 import { indexedDBStorage } from '@/services/storage/indexedDB';
+import { SupabaseSyncService } from '@/services/storage/supabaseSync';
 
 export const STORAGE_PREFIX = 'bcc:v1:';
 
@@ -53,6 +54,8 @@ export class LocalStorageService {
       if (typeof window !== 'undefined' && window.indexedDB) {
         indexedDBStorage.setItem(fullKey, serialized).catch(() => {});
       }
+      // Asynchronously push to Supabase Cloud for cross-device sync
+      SupabaseSyncService.pushItem(fullKey, value).catch(() => {});
       return true;
     } catch (e: unknown) {
       if (e instanceof Error && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
