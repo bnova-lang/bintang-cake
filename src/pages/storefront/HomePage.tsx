@@ -48,234 +48,116 @@ export const HomePage: React.FC = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-      {/* Hero Section Sesuai Desain Mockup */}
-      <section
-        style={{
-          backgroundColor: '#372316',
-          backgroundImage: 'radial-gradient(circle at 80% 20%, rgba(245, 130, 32, 0.15) 0%, transparent 60%), linear-gradient(135deg, #372316 0%, #2A1A10 100%)',
-          color: 'var(--cream-100)',
-          padding: '44px 0 28px',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '36px', alignItems: 'center' }}>
-          {/* Left Text & CTA */}
-          <div style={{ zIndex: 2 }}>
+      {/* Hero Section */}
+      <section style={{ backgroundColor: 'var(--brown-900)', color: 'var(--cream-100)', padding: '48px 0 64px', position: 'relative', overflow: 'hidden' }}>
+        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', alignItems: 'center' }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(242, 193, 78, 0.15)', color: 'var(--gold-500)', padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '13px', fontWeight: 600, marginBottom: '16px' }}>
+              <Sparkles size={16} />
+              <span>{content.heroBadge || 'Panggangan Segar Dapur Samarinda'}</span>
+            </div>
             <h1
               style={{
-                fontSize: content.heroTitleFontFamily === 'script' ? 'clamp(36px, 6vw, 56px)' : 'clamp(32px, 5.2vw, 52px)',
-                color: content.heroTitleColor || '#FFFFFF',
+                fontSize: content.heroTitleFontFamily === 'script' ? 'clamp(36px, 6vw, 54px)' : 'clamp(32px, 5vw, 48px)',
+                color: content.heroTitleColor || 'var(--text-on-dark)',
                 fontFamily: getHeroTitleFont(),
                 fontStyle: content.heroTitleItalic ? 'italic' : 'normal',
                 fontWeight: content.heroTitleWeight === 'normal' ? 400 : content.heroTitleWeight === 'semibold' ? 600 : 700,
                 marginBottom: '16px',
                 lineHeight: content.heroTitleFontFamily === 'script' ? 1.25 : 1.15,
-                letterSpacing: '-0.5px',
-                textShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                textShadow: '0 2px 8px rgba(0,0,0,0.2)',
               }}
             >
-              {content.heroTitle || 'Bintang Cake & Cookies'}
+              {content.heroTitle}
             </h1>
-            <p
-              style={{
-                fontSize: '15.5px',
-                color: 'rgba(255, 248, 234, 0.9)',
-                lineHeight: 1.65,
-                marginBottom: '32px',
-                maxWidth: '520px',
-              }}
-            >
-              {content.heroSubtitle ||
-                'Kelezatan aneka cake, cookies, macaroni schotel, dan sajian kuliner istimewa dipanggang segar setiap hari dari dapur Samarinda. Menemani setiap senyum dan momen bahagia Anda bersama keluarga tercinta.'}
+            <p style={{ fontSize: '16px', color: 'var(--cream-200)', lineHeight: 1.6, marginBottom: '28px', maxWidth: '520px' }}>
+              {content.heroSubtitle}
             </p>
-
-            {/* Dua Tombol Sesuai Mockup: Pesan Sekarang (Orange) & Reservasi (Sage Green) */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
               <Link
                 to="/produk"
                 style={{
-                  backgroundColor: '#F58220',
-                  color: '#FFFFFF',
-                  padding: '13px 30px',
+                  backgroundColor: 'var(--gold-500)',
+                  color: 'var(--brown-900)',
+                  padding: '12px 24px',
                   borderRadius: 'var(--radius-full)',
                   fontWeight: 700,
                   fontSize: '15px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
-                  boxShadow: '0 4px 16px rgba(245, 130, 32, 0.45)',
-                  transition: 'transform 0.15s, box-shadow 0.15s',
+                  boxShadow: 'var(--shadow-md)',
                 }}
               >
-                <span>Pesan Sekarang</span>
+                <span>Lihat Seluruh Produk</span>
+                <ArrowRight size={18} />
               </Link>
               <Link
-                to="/kategori/cat-custom"
+                to="/spesial"
                 style={{
-                  backgroundColor: '#5D936A',
-                  color: '#FFFFFF',
-                  padding: '13px 30px',
+                  backgroundColor: 'transparent',
+                  color: 'var(--cream-100)',
+                  border: '1px solid var(--gold-500)',
+                  padding: '12px 24px',
                   borderRadius: 'var(--radius-full)',
-                  fontWeight: 700,
+                  fontWeight: 600,
                   fontSize: '15px',
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '8px',
-                  boxShadow: '0 4px 16px rgba(93, 147, 106, 0.45)',
-                  transition: 'transform 0.15s, box-shadow 0.15s',
                 }}
               >
-                <span>Reservasi</span>
+                <span>Paket Hampers & Spesial</span>
               </Link>
             </div>
           </div>
 
-          {/* Right Hero Graphic (Lingkaran Oranye & Anak Gadis Memegang Kue Ultah Lilin) */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
+          <div style={{ position: 'relative' }}>
             <div
               style={{
-                position: 'relative',
-                borderRadius: '32px',
+                borderRadius: 'var(--radius-xl)',
                 overflow: 'hidden',
-                boxShadow: '0 12px 36px rgba(0,0,0,0.4)',
-                border: '2px solid rgba(242, 193, 78, 0.25)',
-                maxWidth: '520px',
-                width: '100%',
-                backgroundColor: '#372316',
+                boxShadow: 'var(--shadow-lg)',
+                border: '4px solid rgba(242, 193, 78, 0.3)',
+                aspectRatio: '4/3',
               }}
             >
               <img
-                src="/images/hero-graphic.jpg"
-                alt="Bintang Cake & Cookies - Momen Bahagia Bersama Kue Istimewa"
-                style={{
-                  width: '100%',
-                  height: 'auto',
-                  maxHeight: '420px',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
+                src={content.heroImageUrl || (content.banners && content.banners[0]?.imageUrl) || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80'}
+                alt="Bintang Cake & Cookies"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             </div>
-          </div>
-        </div>
-
-        {/* Highlight Row: Sage Green Banner & 4 Rounded Cards Sesuai Mockup Bawah */}
-        <div style={{ marginTop: '36px', padding: '16px 0 10px' }}>
-          <div
-            className="container"
-            style={{
-              backgroundColor: 'rgba(93, 147, 106, 0.88)',
-              backdropFilter: 'blur(8px)',
-              borderRadius: '24px',
-              padding: '24px 20px',
-              border: '1px solid rgba(255, 255, 255, 0.25)',
-              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.18)',
-            }}
-          >
             <div
               style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                gap: '16px',
+                position: 'absolute',
+                bottom: '-16px',
+                right: '16px',
+                backgroundColor: 'var(--ivory-50)',
+                color: 'var(--brown-900)',
+                padding: '12px 20px',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-md)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                border: '1px solid var(--cream-300)',
               }}
             >
-              {[
-                {
-                  id: 'cake',
-                  title: 'Birthday & Custom Cake',
-                  badge: 'Kue Ulang Tahun',
-                  image: '/images/highlight-card-cake.jpg',
-                  link: '/kategori/cat-custom',
-                },
-                {
-                  id: 'macaroni',
-                  title: 'Macaroni Schotel',
-                  badge: 'Panggang Keju Melted',
-                  image: '/images/highlight-card-macaroni.jpg',
-                  link: '/produk',
-                },
-                {
-                  id: 'nastar',
-                  title: 'Nastar Wisman Super',
-                  badge: 'Cookies Butter Asli',
-                  image: '/images/highlight-card-nastar.jpg',
-                  link: '/kategori/cat-cookies',
-                },
-                {
-                  id: 'culinary',
-                  title: 'Kuliner & Catering Dapur',
-                  badge: 'Sajian Lezat Pilihan',
-                  image: '/images/highlight-card-culinary.jpg',
-                  link: '/produk',
-                },
-              ].map(card => (
-                <Link
-                  key={card.id}
-                  to={card.link}
-                  style={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.12)',
-                    borderRadius: '20px',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    border: '1.5px solid rgba(255, 255, 255, 0.25)',
-                    transition: 'transform 0.2s, box-shadow 0.2s, background-color 0.2s',
-                    color: '#FFFFFF',
-                  }}
-                  className="mockup-highlight-card"
-                >
-                  <div style={{ height: '140px', overflow: 'hidden', backgroundColor: 'rgba(0,0,0,0.1)' }}>
-                    <img
-                      src={card.image}
-                      alt={card.title}
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s',
-                      }}
-                    />
-                  </div>
-                  <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        color: 'rgba(255, 248, 234, 0.9)',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {card.badge}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        fontFamily: 'var(--font-serif)',
-                        lineHeight: 1.25,
-                      }}
-                    >
-                      {card.title}
-                    </span>
-                  </div>
-                </Link>
-              ))}
+              <div style={{ backgroundColor: 'var(--gold-100)', color: 'var(--gold-600)', width: '38px', height: '38px', borderRadius: 'var(--radius-full)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Award size={22} />
+              </div>
+              <div>
+                <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', fontWeight: 700 }}>
+                  {content.heroCardLabel || 'Resep Keluarga'}
+                </span>
+                <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-serif)' }}>
+                  {content.heroCardText || '100% Butter & Bahan Premium'}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-
-        <style>{`
-          .mockup-highlight-card:hover {
-            transform: translateY(-4px);
-            background-color: rgba(255, 255, 255, 0.22) !important;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-          }
-          .mockup-highlight-card:hover img {
-            transform: scale(1.05);
-          }
-        `}</style>
       </section>
 
       {/* Announcements Bar */}

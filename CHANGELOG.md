@@ -9,10 +9,6 @@ Kategori: `Ditambahkan`, `Diubah`, `Diperbaiki`, `Dihapus`, `Keamanan`, `Keputus
 ## [Belum dirilis]
 
 ### Ditambahkan
-- **Penerapan Desain Mockup Hero, Navbar, dan Highlight Produk (`/`):**
-  - Menyesuaikan tampilan Header/Navbar dengan motto resmi brand *"Partner to Enjoy Your Day"*, tombol pill putih **"Pesan"** (dengan badge jumlah keranjang belanja), dan avatar profil lingkaran sesuai referensi desain pengguna.
-  - Memperbarui Hero Section pada Beranda (`HomePage.tsx`) dengan tema cokelat elegan khas Dapur Samarinda (`#372316`), ornamen batik Dayak Kalimantan, visual lingkaran oranye ceria dengan foto anak memegang kue tart berhias lilin (`hero-graphic.jpg`), serta dua tombol aksi pill utama: **"Pesan Sekarang"** (oranye `#F58220`) dan **"Reservasi"** (hijau sage `#5D936A`).
-  - Menambahkan baris kartu sorotan (*Highlight Row*) berlatar gelombang lengkung hijau sage lembut dengan 4 kartu pratinjau produk unggulan toko: Birthday & Custom Cake, Macaroni Schotel Panggang, Nastar Wisman Super, dan Sajian Kuliner Dapur yang responsif dan interaktif di HP maupun laptop.
 - **Pembaruan Kredensial Resmi Admin Toko (`/admin/login`):**
   - Mengatur akun resmi admin toko dengan Username: `bintang` dan Password: `Nadin13` terenkripsi aman PBKDF2.
   - Menambahkan migrasi otomatis `seedVersion: 5` pada `localStorageRepositories.ts` agar data akun langsung sinkron pada browser yang sudah berjalan.
