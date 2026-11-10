@@ -1,0 +1,50 @@
+:root {
+  /* Cokelat */
+  --brown-900: #3B2416;  /* teks utama, header gelap, kartu CTA gelap */
+  --brown-800: #4A2E1C;  /* header, tombol utama gelap */
+  --brown-700: #5E3B25;  /* hover tombol gelap */
+  --brown-500: #8A5A3B;  /* ikon, teks sekunder hangat */
+  --brown-300: #C9A78A;  /* garis halus, placeholder */
+
+  /* Cream & Ivory */
+  --ivory-50:  #FFFDF8;  /* kartu, input */
+  --cream-100: #FBF6EC;  /* latar halaman */
+  --cream-200: #F4ECDD;  /* panel/seksi sekunder, chip nonaktif */
+  --cream-300: #E9DDC8;  /* border */
+
+  /* Gold (aksen) */
+  --gold-500:  #F2C14E;  /* tombol CTA terang, lencana */
+  --gold-600:  #D9A53A;  /* hover/aktif, ikon gold */
+  --gold-100:  #FBEFC7;  /* latar lencana lembut */
+
+  /* Semantik */
+  --success-600: #1F7A3E;   /* tombol WhatsApp, status berhasil */
+  --success-100: #E3F2E6;
+  --warning-600: #B7791F;   /* stok menipis, pre-order */
+  --warning-100: #FDF0D5;
+  --danger-600:  #B3392F;   /* sold out, galat, hapus */
+  --danger-100:  #FBE4E1;
+  --info-600:    #2F6F8F;   /* informasi netral */
+  --info-100:    #E0F2FE;
+
+  /* Teks */
+  --text-primary:   var(--brown-900);
+  --text-secondary: #6F5645;
+  --text-muted:     #9A8575;
+  --text-on-dark:   #FFF8EA;
+  --text-on-gold:   var(--brown-900);
+
+  /* Tipografi */
+  --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Bayangan & Radius */
+  --shadow-sm: 0 1px 4px rgba(59, 36, 22, 0.06);
+  --shadow-md: 0 4px 16px rgba(59, 36, 22, 0.08);
+  --shadow-lg: 0 8px 24px rgba(59, 36, 22, 0.12);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+}
