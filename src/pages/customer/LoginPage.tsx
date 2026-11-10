@@ -10,7 +10,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { loginCustomer, loginAdmin } = useAuth();
+  const { loginCustomer } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -18,17 +18,6 @@ export const LoginPage: React.FC = () => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
-    // If user enters 'admin' on customer login, seamlessly log them into Admin!
-    if (identifier.trim().toLowerCase() === 'admin') {
-      const adminRes = await loginAdmin('admin', password || 'admin-bintang-demo');
-      setIsLoading(false);
-      if (adminRes.success) {
-        showToast('Berhasil masuk ke Dashboard Admin!', 'success');
-        navigate('/admin');
-        return;
-      }
-    }
 
     const res = await loginCustomer(identifier, password);
     setIsLoading(false);
@@ -53,19 +42,6 @@ export const LoginPage: React.FC = () => {
       navigate('/akun');
     } else {
       setError(res.error || 'Gagal masuk akun demo.');
-    }
-  };
-
-  const handleDirectAdminLogin = async () => {
-    setError('');
-    setIsLoading(true);
-    const res = await loginAdmin('admin', 'admin-bintang-demo');
-    setIsLoading(false);
-    if (res.success) {
-      showToast('Berhasil masuk ke Dashboard Admin!', 'success');
-      navigate('/admin');
-    } else {
-      setError(res.error || 'Gagal masuk akun admin.');
     }
   };
 
@@ -150,7 +126,7 @@ export const LoginPage: React.FC = () => {
             {isLoading ? 'Memeriksa...' : 'Masuk Sekarang'}
           </button>
 
-          {/* Demo Button - 1-Click Login */}
+          {/* Demo Button - 1-Click Login Pelanggan */}
           <button
             type="button"
             onClick={handleDirectDemoLogin}
@@ -170,29 +146,7 @@ export const LoginPage: React.FC = () => {
               gap: '6px',
             }}
           >
-            ⚡ Masuk Langsung Pelanggan Demo (082158739760)
-          </button>
-
-          <button
-            type="button"
-            onClick={handleDirectAdminLogin}
-            disabled={isLoading}
-            style={{
-              backgroundColor: 'var(--brown-900)',
-              color: 'var(--gold-500)',
-              border: '1px solid var(--gold-500)',
-              padding: '10px',
-              borderRadius: 'var(--radius-full)',
-              fontSize: '13px',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-            }}
-          >
-            🛡️ Masuk Langsung ke Dashboard Admin (admin)
+            ⚡ Masuk Akun Demo Pelanggan (082158739760)
           </button>
         </form>
 

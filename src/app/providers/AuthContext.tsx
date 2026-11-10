@@ -153,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     let admins = repos.settingsRepo.getAdminUsers();
     let found: AdminUser | undefined = admins.find(a => a.username.toLowerCase() === cleanUser);
 
-    if (!found && (cleanUser === 'bintang' || cleanUser === 'admin')) {
+    if (!found && cleanUser === 'bintang') {
       const defaultAdmin = { ...SEED_ADMIN_USERS[0] };
       repos.settingsRepo.saveAdminUser(defaultAdmin);
       found = defaultAdmin;
@@ -164,7 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     let valid = false;
-    if ((cleanUser === 'bintang' && cleanPass === 'Nadin13') || (cleanUser === 'admin' && cleanPass === 'admin-bintang-demo')) {
+    if (cleanUser === 'bintang' && cleanPass === 'Nadin13') {
       valid = true;
     } else {
       valid = await verifyPassword(cleanPass, found.passwordHash, found.passwordSalt);

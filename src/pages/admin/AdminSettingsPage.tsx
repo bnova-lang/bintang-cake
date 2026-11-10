@@ -557,7 +557,7 @@ export const AdminSettingsPage: React.FC = () => {
                 </label>
                 <input
                   type="password"
-                  placeholder="Masukkan password saat ini (demo: admin-bintang-demo)"
+                  placeholder="Masukkan password saat ini"
                   value={currentPassword}
                   onChange={e => setCurrentPassword(e.target.value)}
                   style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)', fontSize: '13px' }}
