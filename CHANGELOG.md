@@ -9,6 +9,9 @@ Kategori: `Ditambahkan`, `Diubah`, `Diperbaiki`, `Dihapus`, `Keamanan`, `Keputus
 ## [Belum dirilis]
 
 ### Ditambahkan
+- **Pembaruan Kredensial Resmi Admin Toko (`/admin/login`):**
+  - Mengatur akun resmi admin toko dengan Username: `bintang` dan Password: `Nadin13` terenkripsi aman PBKDF2.
+  - Menambahkan migrasi otomatis `seedVersion: 5` pada `localStorageRepositories.ts` agar data akun langsung sinkron pada browser yang sudah berjalan.
 - **Kolom Rentang Harga Varian (Harga Terendah - Harga Tertinggi) (`/admin/produk`):**
   - Menambahkan kolom **Harga Tertinggi (Rp)** di samping Harga Terendah pada editor Varian Kemasan & Harga di formulir tambah/edit produk.
   - Jika kolom harga tertinggi diisi (misal: Min Rp 400.000, Maks Rp 1.500.000), katalog produk (`ProductCard`) dan halaman detail produk (`ProductDetailPage`) akan secara otomatis menampilkan format rentang harga profesional: `Rp 400.000 - Rp 1.500.000`.

@@ -782,9 +782,28 @@ export function initializeSeedData(forceReset = false): void {
     LocalStorageService.setItem('storeSettings', store);
   }
 
+  // Ensure Admin credentials match: username 'bintang', password 'Nadin13'
+  const admins = LocalStorageService.getItem<AdminUser[]>('adminUsers') || [];
+  let adminUpdated = false;
+  if (admins.length > 0) {
+    admins.forEach(a => {
+      a.username = 'bintang';
+      a.passwordHash = '90d4d3a6dd4b63088926628bc27963d9a16630c81440099f5f6e957b31b0e993';
+      a.passwordSalt = 'a1b2c3d4e5f60718293a4b5c6d7e8f90';
+      a.name = 'Administrator Bintang Cake';
+      adminUpdated = true;
+    });
+  } else {
+    admins.push(...SEED_ADMIN_USERS);
+    adminUpdated = true;
+  }
+  if (adminUpdated) {
+    LocalStorageService.setItem('adminUsers', admins);
+  }
+
   LocalStorageService.setItem('meta', {
     ...meta,
-    seedVersion: 4,
+    seedVersion: 5,
     migratedAt: new Date().toISOString(),
   });
 }

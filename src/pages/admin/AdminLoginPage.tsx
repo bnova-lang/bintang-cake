@@ -73,7 +73,7 @@ export const AdminLoginPage: React.FC = () => {
                 required
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="bintang"
                 style={{ width: '100%', padding: '10px 14px 10px 38px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)', backgroundColor: '#fff', fontSize: '14px' }}
               />
             </div>

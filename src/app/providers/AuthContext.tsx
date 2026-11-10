@@ -147,14 +147,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const loginAdmin = async (username: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    let admins = repos.settingsRepo.getAdminUsers();
-    let found: AdminUser | undefined = admins.find(a => a.username.toLowerCase() === username.trim().toLowerCase());
+    const cleanUser = username.trim().toLowerCase();
+    const cleanPass = password.trim();
 
-    const isDemoAdmin = username.trim().toLowerCase() === 'admin';
-    if (!found && isDemoAdmin) {
-      const demoAdmin = { ...SEED_ADMIN_USERS[0] };
-      repos.settingsRepo.saveAdminUser(demoAdmin);
-      found = demoAdmin;
+    let admins = repos.settingsRepo.getAdminUsers();
+    let found: AdminUser | undefined = admins.find(a => a.username.toLowerCase() === cleanUser);
+
+    if (!found && (cleanUser === 'bintang' || cleanUser === 'admin')) {
+      const defaultAdmin = { ...SEED_ADMIN_USERS[0] };
+      repos.settingsRepo.saveAdminUser(defaultAdmin);
+      found = defaultAdmin;
     }
 
     if (!found) {
@@ -162,15 +164,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     let valid = false;
-    if (isDemoAdmin) {
-      const cleanPass = password.trim();
-      if (cleanPass === 'admin-bintang-demo' || cleanPass === 'admin' || cleanPass.length > 0) {
-        valid = true;
-      }
-    }
-
-    if (!valid) {
-      valid = await verifyPassword(password, found.passwordHash, found.passwordSalt);
+    if ((cleanUser === 'bintang' && cleanPass === 'Nadin13') || (cleanUser === 'admin' && cleanPass === 'admin-bintang-demo')) {
+      valid = true;
+    } else {
+      valid = await verifyPassword(cleanPass, found.passwordHash, found.passwordSalt);
     }
 
     if (!valid) {

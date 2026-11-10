@@ -534,14 +534,14 @@ export const SEED_GALLERY: GalleryItem[] = [
   },
 ];
 
-// Pre-computed PBKDF2 hash for demo accounts:
-// Admin password: "admin-bintang-demo"
-// Customer password: "pelanggan-demo"
+// Pre-computed PBKDF2 hash for admin account:
+// Admin username: "bintang"
+// Admin password: "Nadin13"
 export const SEED_ADMIN_USERS: AdminUser[] = [
   {
     id: 'admin-1',
-    username: 'admin',
-    passwordHash: '270a15a30867697d6c8a6bc3fedde35f9f491343ae590906fbebf4451ee38a4d',
+    username: 'bintang',
+    passwordHash: '90d4d3a6dd4b63088926628bc27963d9a16630c81440099f5f6e957b31b0e993',
     passwordSalt: 'a1b2c3d4e5f60718293a4b5c6d7e8f90',
     name: 'Administrator Bintang Cake',
     active: true,
