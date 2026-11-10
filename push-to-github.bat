@@ -2,7 +2,7 @@
 title Push Bintang Cake to GitHub
 echo ========================================================
 echo   Mengunggah Bintang Cake ^& Cookies ke GitHub
-echo   Repository: https://github.com/bintangcake-ui/Bintang-Cake
+echo   Repository: https://github.com/bungnova-bn/Bintang-Cake
 echo ========================================================
 echo.
 git push -u origin main
