@@ -1,12 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, X, ArrowRight } from 'lucide-react';
 import { repos } from '@/services/repositories';
 import { GalleryItem } from '@/types';
 
 export const GalleryPage: React.FC = () => {
-  const galleryItems = useMemo(() => {
-    return repos.settingsRepo.getGallery().filter(item => item.active);
+  const [galleryItems, setGalleryItems] = useState(() => {
+    return repos.settingsRepo.getGallery().filter(item => item.active !== false);
+  });
+
+  useEffect(() => {
+    const handleUpdate = () => {
+      setGalleryItems(repos.settingsRepo.getGallery().filter(item => item.active !== false));
+    };
+    window.addEventListener('bcc-settings-updated', handleUpdate);
+    return () => window.removeEventListener('bcc-settings-updated', handleUpdate);
   }, []);
 
   const [activeItem, setActiveItem] = useState<GalleryItem | null>(null);

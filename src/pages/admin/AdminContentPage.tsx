@@ -429,9 +429,15 @@ export const AdminContentPage: React.FC = () => {
   };
 
   const handleDeleteGallery = async (id: string) => {
-    await indexedDBStorage.removeItem(id);
+    try {
+      await indexedDBStorage.removeItem(id);
+    } catch (e) {
+      console.warn('Failed to remove from indexedDB:', e);
+    }
     repos.settings.deleteGalleryItem(id);
-    addToast('Foto dihapus dari galeri.', 'info');
+    setGallery(prev => prev.filter(g => g.id !== id));
+    window.dispatchEvent(new Event('bcc-settings-updated'));
+    addToast('Foto berhasil dihapus dari galeri.', 'info');
     loadData();
     indexedDBStorage.getCapacityEstimate().then(setStorageInfo);
   };
@@ -2180,25 +2186,42 @@ export const AdminContentPage: React.FC = () => {
                 <div style={{ color: 'var(--brown-500)', fontSize: '11px' }}>{item.category}</div>
               </div>
               <button
-                onClick={() => handleDeleteGallery(item.id)}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDeleteGallery(item.id);
+                }}
                 title="Hapus foto"
+                aria-label={`Hapus foto ${item.title}`}
                 style={{
                   position: 'absolute',
                   top: '8px',
                   right: '8px',
-                  backgroundColor: 'rgba(255,255,255,0.9)',
-                  border: 'none',
+                  backgroundColor: 'rgba(255,255,255,0.95)',
+                  border: '1px solid rgba(0,0,0,0.1)',
                   borderRadius: '50%',
-                  width: '28px',
-                  height: '28px',
+                  width: '32px',
+                  height: '32px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   cursor: 'pointer',
-                  color: 'var(--danger-500)',
+                  color: 'var(--danger-600, #DC2626)',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+                  transition: 'background-color 0.2s, transform 0.15s',
+                  zIndex: 10,
+                }}
+                onMouseEnter={e => {
+                  e.currentTarget.style.backgroundColor = '#FEE2E2';
+                  e.currentTarget.style.transform = 'scale(1.1)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.95)';
+                  e.currentTarget.style.transform = 'scale(1)';
                 }}
               >
-                <Trash2 size={14} />
+                <Trash2 size={16} />
               </button>
             </div>
           ))}

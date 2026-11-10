@@ -544,11 +544,12 @@ export class LocalStorageSettingsRepository implements ISettingsRepository {
   }
 
   getGallery(): GalleryItem[] {
-    return LocalStorageService.getItem<GalleryItem[]>('gallery', undefined, []) || [];
+    const items = LocalStorageService.getItem<GalleryItem[]>('gallery', undefined, []) || [];
+    return items.filter(g => g.active !== false);
   }
 
   saveGalleryItem(item: GalleryItem): void {
-    const items = this.getGallery();
+    const items = LocalStorageService.getItem<GalleryItem[]>('gallery', undefined, []) || [];
     const index = items.findIndex(g => g.id === item.id);
     if (index >= 0) {
       items[index] = item;
@@ -559,8 +560,8 @@ export class LocalStorageSettingsRepository implements ISettingsRepository {
   }
 
   deleteGalleryItem(id: string): void {
-    const items = this.getGallery();
-    const updated = items.map(g => g.id === id ? { ...g, active: false } : g);
+    const items = LocalStorageService.getItem<GalleryItem[]>('gallery', undefined, []) || [];
+    const updated = items.filter(g => g.id !== id);
     LocalStorageService.setItem('gallery', updated);
   }
 

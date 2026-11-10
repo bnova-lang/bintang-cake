@@ -3,6 +3,7 @@ import {
   LocalStorageCategoryRepository,
   LocalStorageProductRepository,
   LocalStorageOrderRepository,
+  LocalStorageSettingsRepository,
   initializeSeedData,
 } from './localStorageRepositories';
 import { Order } from '@/types';
@@ -230,5 +231,33 @@ describe('LocalStorage Repositories & Business Logic', () => {
 
     const nastarAfterRestock = prodRepo.getBySlug('nastar-wisman-super-butter')!;
     expect(nastarAfterRestock.variants[0].stockQuantity).toBe(initialStock);
+  });
+
+  it('manages gallery items: adding and deleting successfully removes from storage', () => {
+    const settingsRepo = new LocalStorageSettingsRepository();
+    const initialItems = settingsRepo.getGallery();
+    const initialCount = initialItems.length;
+
+    const testItem = {
+      id: 'gal-test-1',
+      title: 'Test Cake Photo',
+      category: 'Cake',
+      imageUrl: 'https://example.com/test.jpg',
+      active: true,
+      sortOrder: initialCount + 1,
+      createdAt: new Date().toISOString(),
+    };
+
+    // Add item
+    settingsRepo.saveGalleryItem(testItem);
+    const afterAdd = settingsRepo.getGallery();
+    expect(afterAdd.length).toBe(initialCount + 1);
+    expect(afterAdd.some(g => g.id === 'gal-test-1')).toBe(true);
+
+    // Delete item
+    settingsRepo.deleteGalleryItem('gal-test-1');
+    const afterDelete = settingsRepo.getGallery();
+    expect(afterDelete.length).toBe(initialCount);
+    expect(afterDelete.some(g => g.id === 'gal-test-1')).toBe(false);
   });
 });

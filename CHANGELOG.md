@@ -40,6 +40,11 @@ Kategori: `Ditambahkan`, `Diubah`, `Diperbaiki`, `Dihapus`, `Keamanan`, `Keputus
   - Panel konfigurasi lengkap di menu `/admin/pengaturan` (*Program Hadiah Souvenir & Diskon Belanja*) yang memungkinkan pemilik toko mengaktifkan/menonaktifkan promo, mengubah batas minimal belanja (Rp 750.000), memilih bentuk promo (Souvenir / Diskon / Keduanya), mengganti nama souvenir hadiah, dan mengatur nominal potongan harga.
 
 ### Diperbaiki
+- **Penghapusan Foto Galeri Toko (`/admin/konten`):**
+  - Memperbaiki metode `deleteGalleryItem` pada `localStorageRepositories.ts` yang sebelumnya tidak membuang data dari array penyimpanan sehingga foto tetap tampil di layar meskipun tombol hapus sudah diklik.
+  - Memperbaiki `getGallery` agar memfilter keluar item yang berstatus nonaktif atau terhapus (`active !== false`).
+  - Memperbaiki `handleDeleteGallery` pada `AdminContentPage.tsx` agar menghapus foto seketika dari tampilan antarmuka (*UI state*), menyinkronkan pembersihan ke IndexedDB dan Supabase Cloud, serta menyiarkan sinyal sinkronisasi `bcc-settings-updated`.
+  - Memperbesar tombol ikon tempat sampah (*trash button*) dengan efek hover dan bayangan halus agar lebih responsif dan mudah ditekan di HP maupun desktop.
 - **Penyimpanan Penuh Saat Unggah Galeri (*QuotaExceededError*):**
   - Memperbaiki pengunggah foto galeri di `/admin/konten` yang sebelumnya menyimpan berkas gambar mentah uncompressed (5MB–8MB) sehingga memicu galat kuota browser.
   - Menerapkan kompresi otomatis HTML5 Canvas saat pemilihan berkas gambar galeri (resolusi optimal 850px, kualitas JPEG 0.82) sehingga ukuran file terpangkas drastis menjadi hanya ~35 KB (penghematan memori 98%) dengan visual tetap jernih.
