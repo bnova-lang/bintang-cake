@@ -9,6 +9,20 @@ Kategori: `Ditambahkan`, `Diubah`, `Diperbaiki`, `Dihapus`, `Keamanan`, `Keputus
 ## [Belum dirilis]
 
 ### Ditambahkan
+- **Fitur Pengaturan Urutan Posisi Produk & Stok (#1 sampai Terakhir) (`/admin/produk` & Storefront):**
+  - Menambahkan kolom **No. Urut** pada tabel kelola produk dan stok di panel admin (`AdminProductsPage.tsx`) yang dilengkapi tombol panah geser naik (▲) dan geser turun (▼) untuk memindahkan urutan produk dengan 1 kali klik.
+  - Menambahkan kotak input nomor urut langsung pada tabel produk, memungkinkan admin mengetik langsung angka urutan (misal: 1, 2, 3...) dan menekan Enter untuk memindahkan posisi produk secara cepat.
+  - Menambahkan kolom input formulir **No. Urut Tampil (Posisi Produk)** pada jendela modal Tambah Produk Baru dan Edit Produk.
+  - Memperbarui repository `LocalStorageProductRepository.getAll()` agar secara konsisten mengurutkan produk berdasarkan `sortOrder` (No. 1 tampil paling depan) di beranda ("Istimewa Hari Ini"), halaman kategori, dan katalog.
+  - Menetapkan urutan default pada halaman Katalog (`ProductsPage.tsx`) menjadi **"Urutan Rekomendasi Toko"**.
+  - Mengimplementasikan migrasi data otomatis `seedVersion: 6` pada `localStorageRepositories.ts` untuk mengisi nilai `sortOrder` berurutan pada data browser yang sudah ada.
+
+### Diperbaiki
+- **Pemilihan Ukuran & Paket Kemasan pada Kartu Produk (`ProductCard.tsx`):**
+  - Memperbaiki perilaku tombol belanja pada kartu produk katalog dan beranda yang sebelumnya langsung otomatis menambahkan *Mini Pack 150 gr* ke keranjang tanpa memberi kesempatan kepada pembeli untuk memilih ukuran toples/paket.
+  - Kini klik pada tombol belanja selalu memunculkan jendela dialog `QuickVariantModal` sehingga pembeli leluasa memilih varian kemasan yang diinginkan (Mini Pack, Toples 350g, Toples Segel 500g, dll), mengatur jumlah pembelian, dan menulis catatan khusus.
+- **Tampilan Rentang Harga Produk Rp 0 (`ProductCard.tsx` & `QuickVariantModal.tsx`):**
+  - Memperbaiki rumus kalkulasi harga minimum pada kartu produk agar mengabaikan angka 0 jika terdapat varian dengan harga normal, menghilangkan bug visual tampilan `Rp 0 - Rp 75.000` menjadi harga yang akurat (misal: `Rp 75.000`).
 - **Fitur Hero Slider / Banner Dinamis & Pengelola Unggah Banner Kapan Saja (`/` & `/admin/konten`):**
   - Menghadirkan komponen Hero Slider / Banner interaktif (`HeroSlider.tsx`) di halaman beranda toko dengan transisi animasi halus, tombol navigasi panah kiri/kanan, indikator titik (*pagination dots*), penghitung slide, fitur jeda otomatis saat di-hover, serta dukungan usapan jari (*touch swipe*) untuk pengguna HP.
   - Menyediakan panel admin **"Kelola Hero Slider & Banner Beranda"** di `/admin/konten` lengkap dengan fitur unggah foto banner langsung dari HP/laptop (kompresi otomatis canvas ramah memori ~60 KB), kolom judul, subtitle, lencana badge, teks tombol, dan pilihan tautan tujuan.
