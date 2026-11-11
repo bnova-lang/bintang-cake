@@ -244,7 +244,9 @@ export const QuickVariantModal: React.FC<QuickVariantModalProps> = ({
                 </div>
                 <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--brown-800)' }}>
                   {selectedVariant
-                    ? selectedVariant.maxPrice && selectedVariant.maxPrice > selectedVariant.price
+                    ? selectedVariant.price === 0 && selectedVariant.maxPrice && selectedVariant.maxPrice > 0
+                      ? formatRupiah(selectedVariant.maxPrice)
+                      : selectedVariant.maxPrice && selectedVariant.maxPrice > selectedVariant.price
                       ? `${formatRupiah(selectedVariant.price)} - ${formatRupiah(selectedVariant.maxPrice)}`
                       : formatRupiah(selectedVariant.price)
                     : formatRupiah(0)}
@@ -355,7 +357,9 @@ export const QuickVariantModal: React.FC<QuickVariantModalProps> = ({
                             color: isSelected ? 'var(--brown-900)' : 'var(--brown-800)',
                           }}
                         >
-                          {variant.maxPrice && variant.maxPrice > variant.price
+                          {variant.price === 0 && variant.maxPrice && variant.maxPrice > 0
+                            ? formatRupiah(variant.maxPrice)
+                            : variant.maxPrice && variant.maxPrice > variant.price
                             ? `${formatRupiah(variant.price)} - ${formatRupiah(variant.maxPrice)}`
                             : formatRupiah(variant.price)}
                         </div>
@@ -378,6 +382,34 @@ export const QuickVariantModal: React.FC<QuickVariantModalProps> = ({
                   );
                 })}
               </div>
+
+              {/* Quick Link to Packaging Catalog */}
+              <Link
+                to="/produk/pilihan-kemasan-toples-kue"
+                onClick={onClose}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  padding: '9px 12px',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: 'var(--cream-100)',
+                  border: '1px dashed var(--cream-300)',
+                  fontSize: '12px',
+                  color: 'var(--brown-800)',
+                  textDecoration: 'none',
+                  marginTop: '10px',
+                  transition: 'background-color 0.15s',
+                }}
+              >
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={13} color="var(--gold-600)" />
+                  Mau pilih kemasan khusus atau toples lainnya?
+                </span>
+                <span style={{ fontWeight: 700, color: 'var(--brown-900)', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                  Lihat Pilihan Kemasan <ArrowRight size={13} />
+                </span>
+              </Link>
             </div>
 
             {/* Quantity Stepper & Notes */}

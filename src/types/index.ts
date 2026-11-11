@@ -49,6 +49,7 @@ export interface Product {
   stockQuantity: number;    // if per_product
   lowStockThreshold: number;
   variants: ProductVariant[];
+  sortOrder?: number;
   createdAt: string;
   updatedAt: string;
 }

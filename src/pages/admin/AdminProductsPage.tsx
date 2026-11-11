@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Edit2, Trash2, Search, X, Check, Cookie, Image, Folder } from 'lucide-react';
+import { Plus, Edit2, Trash2, Search, X, Check, Cookie, Image, Folder, ArrowUp, ArrowDown } from 'lucide-react';
 import { repos } from '@/services/repositories';
 import { Product, ProductVariant, FulfillmentType, StockMode } from '@/types';
 import { formatRupiah } from '@/utils/format';
@@ -29,10 +29,48 @@ export const AdminProductsPage: React.FC = () => {
   const [lowStockThreshold, setLowStockThreshold] = useState<number>(3);
   const [featured, setFeatured] = useState<boolean>(false);
   const [newArrival, setNewArrival] = useState<boolean>(false);
+  const [sortOrder, setSortOrder] = useState<number>(1);
   const [variants, setVariants] = useState<ProductVariant[]>([]);
 
   const reloadProducts = () => {
     setProducts(repos.productRepo.getAll());
+  };
+
+  const handleMoveProduct = (index: number, direction: 'up' | 'down') => {
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= filteredProducts.length) return;
+
+    const currentP = filteredProducts[index];
+    const targetP = filteredProducts[targetIndex];
+
+    const currentOrder = currentP.sortOrder ?? (index + 1);
+    const targetOrder = targetP.sortOrder ?? (targetIndex + 1);
+
+    let newCurrentOrder = targetOrder;
+    let newTargetOrder = currentOrder;
+    if (newCurrentOrder === newTargetOrder) {
+      newCurrentOrder = direction === 'up' ? Math.max(1, currentOrder - 1) : currentOrder + 1;
+      newTargetOrder = currentOrder;
+    }
+
+    currentP.sortOrder = newCurrentOrder;
+    targetP.sortOrder = newTargetOrder;
+
+    repos.productRepo.save(currentP);
+    repos.productRepo.save(targetP);
+    reloadProducts();
+    window.dispatchEvent(new Event('bcc-products-updated'));
+    showToast(`Urutan produk "${currentP.name}" berhasil dipindahkan ke posisi #${newCurrentOrder}!`, 'success');
+  };
+
+  const handleUpdateProductOrder = (p: Product, newOrderStr: string) => {
+    const val = parseInt(newOrderStr, 10);
+    if (isNaN(val) || val < 1) return;
+    p.sortOrder = val;
+    repos.productRepo.save(p);
+    reloadProducts();
+    window.dispatchEvent(new Event('bcc-products-updated'));
+    showToast(`Nomor urut produk "${p.name}" diset ke #${val}!`, 'success');
   };
 
   const filteredProducts = useMemo(() => {
@@ -60,6 +98,7 @@ export const AdminProductsPage: React.FC = () => {
     setLowStockThreshold(3);
     setFeatured(false);
     setNewArrival(false);
+    setSortOrder(products.length + 1);
     setVariants([
       {
         id: 'var-1-' + Date.now(),
@@ -107,6 +146,7 @@ export const AdminProductsPage: React.FC = () => {
     setLowStockThreshold(p.lowStockThreshold);
     setFeatured(p.featured);
     setNewArrival(p.newArrival);
+    setSortOrder(p.sortOrder ?? (products.findIndex(x => x.id === p.id) + 1));
     setVariants(JSON.parse(JSON.stringify(p.variants)));
     setModalOpen(true);
   };
@@ -206,6 +246,7 @@ export const AdminProductsPage: React.FC = () => {
       stockQuantity: Number(stockQty),
       lowStockThreshold: Number(lowStockThreshold),
       variants,
+      sortOrder: Number(sortOrder) || (products.length + 1),
       createdAt: editingProduct?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -314,6 +355,7 @@ export const AdminProductsPage: React.FC = () => {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', textAlign: 'left' }}>
           <thead>
             <tr style={{ backgroundColor: 'var(--cream-200)', borderBottom: '2px solid var(--cream-300)', color: 'var(--brown-900)' }}>
+              <th style={{ padding: '12px', width: '96px', textAlign: 'center' }}>No. Urut</th>
               <th style={{ padding: '12px' }}>Produk</th>
               <th style={{ padding: '12px' }}>Kategori</th>
               <th style={{ padding: '12px' }}>Tipe Pemenuhan</th>
@@ -324,13 +366,86 @@ export const AdminProductsPage: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredProducts.map(p => {
+            {filteredProducts.map((p, idx) => {
               const cat = categories.find(c => c.id === p.categoryId);
               const imgUrl = p.images[0]?.url || '';
               const totalStock = p.stockMode === 'per_product' ? p.stockQuantity : p.variants.reduce((sum, v) => sum + v.stockQuantity, 0);
 
               return (
                 <tr key={p.id} style={{ borderBottom: '1px solid var(--cream-200)' }}>
+                  <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => handleMoveProduct(idx, 'up')}
+                          title="Geser naik (tampil lebih awal)"
+                          style={{
+                            border: '1px solid var(--cream-300)',
+                            backgroundColor: idx === 0 ? 'var(--cream-100)' : '#fff',
+                            color: idx === 0 ? 'var(--text-muted)' : 'var(--brown-800)',
+                            borderRadius: '4px',
+                            width: '22px',
+                            height: '18px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                            padding: 0,
+                          }}
+                        >
+                          <ArrowUp size={12} />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === filteredProducts.length - 1}
+                          onClick={() => handleMoveProduct(idx, 'down')}
+                          title="Geser turun (tampil berikutnya)"
+                          style={{
+                            border: '1px solid var(--cream-300)',
+                            backgroundColor: idx === filteredProducts.length - 1 ? 'var(--cream-100)' : '#fff',
+                            color: idx === filteredProducts.length - 1 ? 'var(--text-muted)' : 'var(--brown-800)',
+                            borderRadius: '4px',
+                            width: '22px',
+                            height: '18px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: idx === filteredProducts.length - 1 ? 'not-allowed' : 'pointer',
+                            padding: 0,
+                          }}
+                        >
+                          <ArrowDown size={12} />
+                        </button>
+                      </div>
+                      <input
+                        type="number"
+                        min={1}
+                        defaultValue={p.sortOrder ?? idx + 1}
+                        key={`${p.id}-${p.sortOrder}`}
+                        onBlur={e => handleUpdateProductOrder(p, e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            handleUpdateProductOrder(p, (e.target as HTMLInputElement).value);
+                            (e.target as HTMLInputElement).blur();
+                          }
+                        }}
+                        title="Ketik nomor urut lalu tekan Enter"
+                        style={{
+                          width: '40px',
+                          textAlign: 'center',
+                          padding: '4px 2px',
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          borderRadius: '6px',
+                          border: '1px solid var(--cream-300)',
+                          backgroundColor: '#fff',
+                          color: 'var(--brown-900)',
+                        }}
+                      />
+                    </div>
+                  </td>
                   <td style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img src={imgUrl} alt="" style={{ width: '44px', height: '44px', borderRadius: 'var(--radius-md)', objectFit: 'cover', backgroundColor: 'var(--cream-200)' }} />
                     <div>
@@ -424,6 +539,25 @@ export const AdminProductsPage: React.FC = () => {
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                  No. Urut Tampil (Posisi Produk) *
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="number"
+                    min={1}
+                    required
+                    value={sortOrder}
+                    onChange={e => setSortOrder(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                    style={{ width: '90px', padding: '8px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)', fontWeight: 700 }}
+                  />
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>
+                    No. 1 tampil paling pertama
+                  </span>
+                </div>
               </div>
 
               <div style={{ gridColumn: '1 / -1' }}>

@@ -11,7 +11,7 @@ export const ProductsPage: React.FC = () => {
 
   const [selectedCategory, setSelectedCategory] = useState<string>(initialCategory);
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
-  const [sortBy, setSortBy] = useState<string>('terbaru');
+  const [sortBy, setSortBy] = useState<string>('urutan');
   const [fulfillmentFilter, setFulfillmentFilter] = useState<string>('semua');
   const [maxPrice, setMaxPrice] = useState<number>(500000);
 
@@ -57,6 +57,12 @@ export const ProductsPage: React.FC = () => {
       const minA = Math.min(...a.variants.map(v => v.price));
       const minB = Math.min(...b.variants.map(v => v.price));
 
+      if (sortBy === 'urutan') {
+        const orderA = typeof a.sortOrder === 'number' ? a.sortOrder : 999;
+        const orderB = typeof b.sortOrder === 'number' ? b.sortOrder : 999;
+        if (orderA !== orderB) return orderA - orderB;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
       if (sortBy === 'termurah') return minA - minB;
       if (sortBy === 'termahal') return minB - minA;
       if (sortBy === 'nama-asc') return a.name.localeCompare(b.name);
@@ -137,6 +143,7 @@ export const ProductsPage: React.FC = () => {
                 color: 'var(--brown-900)',
               }}
             >
+              <option value="urutan">Urutan Rekomendasi Toko</option>
               <option value="terbaru">Terbaru</option>
               <option value="termurah">Harga: Termurah</option>
               <option value="termahal">Harga: Termahal</option>

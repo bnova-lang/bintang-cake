@@ -94,6 +94,7 @@ export const SEED_PRODUCTS: Product[] = [
     stockMode: 'per_variant',
     stockQuantity: 45,
     lowStockThreshold: 5,
+    sortOrder: 1,
     variants: [
       {
         id: 'var-nastar-500g',
@@ -159,6 +160,7 @@ export const SEED_PRODUCTS: Product[] = [
     stockMode: 'per_variant',
     stockQuantity: 20,
     lowStockThreshold: 5,
+    sortOrder: 2,
     variants: [
       {
         id: 'var-kastengel-500g',
@@ -206,6 +208,7 @@ export const SEED_PRODUCTS: Product[] = [
     stockMode: 'per_variant',
     stockQuantity: 15,
     lowStockThreshold: 4,
+    sortOrder: 3,
     variants: [
       {
         id: 'var-lidah-350g',
@@ -244,6 +247,7 @@ export const SEED_PRODUCTS: Product[] = [
     stockMode: 'per_variant',
     stockQuantity: 8,
     lowStockThreshold: 2,
+    sortOrder: 4,
     variants: [
       {
         id: 'var-bolu-roll',
@@ -282,6 +286,7 @@ export const SEED_PRODUCTS: Product[] = [
     stockMode: 'per_variant',
     stockQuantity: 10,
     lowStockThreshold: 2,
+    sortOrder: 5,
     variants: [
       {
         id: 'var-lapis-half',
@@ -329,6 +334,7 @@ export const SEED_PRODUCTS: Product[] = [
     stockMode: 'per_variant',
     stockQuantity: 12,
     lowStockThreshold: 3,
+    sortOrder: 6,
     variants: [
       {
         id: 'var-hampers-box3',
@@ -367,6 +373,7 @@ export const SEED_PRODUCTS: Product[] = [
     stockMode: 'per_variant',
     stockQuantity: 99,
     lowStockThreshold: 5,
+    sortOrder: 7,
     variants: [
       {
         id: 'var-custom-standard',
@@ -405,6 +412,7 @@ export const SEED_PRODUCTS: Product[] = [
     stockMode: 'per_variant',
     stockQuantity: 65,
     lowStockThreshold: 5,
+    sortOrder: 8,
     variants: [
       {
         id: 'var-kemasan-500g',

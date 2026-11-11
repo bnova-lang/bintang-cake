@@ -20,10 +20,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   // Calculate price range
   const activeVariants = product.variants.filter(v => v.active);
-  const minPrices = activeVariants.map(v => v.price);
-  const maxPrices = activeVariants.map(v => (v.maxPrice && v.maxPrice > v.price ? v.maxPrice : v.price));
-  const minPrice = minPrices.length ? Math.min(...minPrices) : 0;
-  const maxPrice = maxPrices.length ? Math.max(...maxPrices) : 0;
+  const positivePrices = activeVariants.map(v => v.price).filter(p => p > 0);
+  const positiveMaxPrices = activeVariants.map(v => (v.maxPrice && v.maxPrice > v.price ? v.maxPrice : v.price)).filter(p => p > 0);
+  const minPrice = positivePrices.length ? Math.min(...positivePrices) : 0;
+  const maxPrice = positiveMaxPrices.length ? Math.max(...positiveMaxPrices) : (positivePrices.length ? Math.max(...positivePrices) : 0);
 
   // Check stock
   const isPreOrder = product.fulfillmentType === 'pre_order';
@@ -41,21 +41,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     e.stopPropagation();
     if (isSoldOut) return;
 
-    // If product has multiple packages/variants, open modal so customer can choose
-    if (activeVariants.length > 1) {
-      setIsModalOpen(true);
-      return;
-    }
-
-    // If only 1 variant exists, add directly
-    if (defaultVariant) {
-      const ok = addItem(product.id, defaultVariant.id, 1);
-      if (ok) {
-        showToast(`${product.name} (${defaultVariant.name}) ditambahkan ke keranjang!`, 'success');
-      } else {
-        showToast('Stok tidak mencukupi untuk varian ini.', 'warning');
-      }
-    }
+    // Always open modal so customer can comfortably choose package size & quantity
+    setIsModalOpen(true);
   };
 
   return (
@@ -186,15 +173,19 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <div>
             <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'block' }}>Harga</span>
             <span style={{ fontSize: '15px', fontWeight: 700, color: 'var(--brown-800)' }}>
-              {minPrice === maxPrice ? formatRupiah(minPrice) : `${formatRupiah(minPrice)} - ${formatRupiah(maxPrice)}`}
+              {minPrice === 0 && maxPrice === 0
+                ? 'Hubungi Toko'
+                : minPrice === maxPrice || minPrice === 0
+                ? formatRupiah(maxPrice || minPrice)
+                : `${formatRupiah(minPrice)} - ${formatRupiah(maxPrice)}`}
             </span>
           </div>
 
           <button
             onClick={handleQuickAdd}
             disabled={isSoldOut}
-            title={activeVariants.length > 1 ? `Pilih paket ${product.name}` : `Tambah ${product.name} ke keranjang`}
-            aria-label={activeVariants.length > 1 ? `Pilih paket kemasan untuk ${product.name}` : `Tambah ${product.name} ke keranjang`}
+            title={`Pilih paket kemasan untuk ${product.name}`}
+            aria-label={`Pilih paket kemasan untuk ${product.name}`}
             style={{
               backgroundColor: isSoldOut ? 'var(--cream-300)' : 'var(--gold-500)',
               color: isSoldOut ? 'var(--text-muted)' : 'var(--brown-900)',
@@ -217,7 +208,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       {/* Quick Select Modal for choosing variant & packaging */}
-      {activeVariants.length > 1 && (
+      {activeVariants.length > 0 && (
         <QuickVariantModal
           product={product}
           isOpen={isModalOpen}

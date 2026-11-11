@@ -94,8 +94,13 @@ export class LocalStorageCategoryRepository implements ICategoryRepository {
 
 export class LocalStorageProductRepository implements IProductRepository {
   getAll(): Product[] {
-    const items = LocalStorageService.getItem<Product[]>('products', undefined, []);
-    return items || [];
+    const items = LocalStorageService.getItem<Product[]>('products', undefined, []) || [];
+    return [...items].sort((a, b) => {
+      const orderA = typeof a.sortOrder === 'number' ? a.sortOrder : 999;
+      const orderB = typeof b.sortOrder === 'number' ? b.sortOrder : 999;
+      if (orderA !== orderB) return orderA - orderB;
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
   }
 
   getById(id: string): Product | null {
@@ -119,8 +124,27 @@ export class LocalStorageProductRepository implements IProductRepository {
     if (index >= 0) {
       items[index] = { ...product, updatedAt: new Date().toISOString() };
     } else {
-      items.push({ ...product, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+      const maxOrder = items.reduce((max, p) => Math.max(max, p.sortOrder || 0), 0);
+      const sortOrder = typeof product.sortOrder === 'number' ? product.sortOrder : maxOrder + 1;
+      items.push({
+        ...product,
+        sortOrder,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
     }
+    LocalStorageService.setItem('products', items);
+  }
+
+  reorder(orderedIds: string[]): void {
+    const items = this.getAll();
+    orderedIds.forEach((id, index) => {
+      const p = items.find(item => item.id === id);
+      if (p) {
+        p.sortOrder = index + 1;
+        p.updatedAt = new Date().toISOString();
+      }
+    });
     LocalStorageService.setItem('products', items);
   }
 
@@ -616,7 +640,7 @@ export class LocalStorageSessionRepository implements ISessionRepository {
   }
 }
 
-const CURRENT_SEED_VERSION = 5;
+const CURRENT_SEED_VERSION = 6;
 
 /**
  * Initializes database with demo seeds if not already initialized
@@ -749,6 +773,15 @@ export function initializeSeedData(forceReset = false): void {
       );
       prodUpdated = true;
     }
+
+    // Ensure all products have sortOrder
+    products.forEach((p, index) => {
+      if (typeof p.sortOrder !== 'number') {
+        const seed = SEED_PRODUCTS.find(sp => sp.id === p.id);
+        p.sortOrder = seed?.sortOrder ?? (index + 1);
+        prodUpdated = true;
+      }
+    });
 
     if (prodUpdated) LocalStorageService.setItem('products', products);
   }

@@ -32,6 +32,7 @@ export interface IProductRepository {
   getByCategory(categoryId: string): Product[];
   save(product: Product): void;
   delete(id: string): void;
+  reorder?(orderedIds: string[]): void;
   updateStock(productId: string, variantId: string | undefined, delta: number, reason: string, refType: StockAdjustment['refType'], refId?: string, actor?: string): boolean;
 }
 
