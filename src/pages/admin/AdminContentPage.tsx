@@ -34,6 +34,7 @@ import { useToast } from '@/app/providers/ToastContext';
 import { formatRupiah } from '@/utils/format';
 import { indexedDBStorage, StorageCapacity } from '@/services/storage/indexedDB';
 import { LocalStorageService } from '@/services/storage/localStorage';
+import { GalleryPickerModal } from '@/components/common/GalleryPickerModal';
 
 const DEFAULT_CATEGORY_IMAGES: Record<string, string> = {
   'cat-cake': 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop&q=80',
@@ -77,6 +78,43 @@ export const AdminContentPage: React.FC = () => {
   const [bannerButtonText, setBannerButtonText] = useState('Lihat Seluruh Produk');
   const [bannerLinkUrl, setBannerLinkUrl] = useState('/produk');
   const [bannerActive, setBannerActive] = useState(true);
+
+  // Gallery Picker Modal state
+  const [galleryPickerTarget, setGalleryPickerTarget] = useState<
+    'hero' | 'hampers' | 'banner-modal' | { type: 'banner-direct'; bannerId: string } | null
+  >(null);
+
+  const handleSelectGalleryItemForTarget = (item: GalleryItem) => {
+    if (!galleryPickerTarget || !content) return;
+
+    if (galleryPickerTarget === 'hero') {
+      const updated = { ...content, heroImageUrl: item.imageUrl };
+      setContent(updated);
+      repos.settings.saveContent(updated);
+      window.dispatchEvent(new Event('bcc-settings-updated'));
+      addToast(`Foto "${item.title}" dari galeri berhasil dipasang sebagai Foto Header! ✨`, 'success');
+    } else if (galleryPickerTarget === 'hampers') {
+      const updated = { ...content, hampersBannerImageUrl: item.imageUrl };
+      setContent(updated);
+      repos.settings.saveContent(updated);
+      window.dispatchEvent(new Event('bcc-settings-updated'));
+      addToast(`Foto "${item.title}" dari galeri berhasil dipasang sebagai Banner Hampers! 🎁`, 'success');
+    } else if (galleryPickerTarget === 'banner-modal') {
+      setBannerImage(item.imageUrl);
+      addToast(`Foto "${item.title}" dari galeri berhasil dipilih untuk slide banner!`, 'info');
+    } else if (typeof galleryPickerTarget === 'object' && galleryPickerTarget.type === 'banner-direct') {
+      const updatedBanners = (content.banners || []).map(b =>
+        b.id === galleryPickerTarget.bannerId ? { ...b, imageUrl: item.imageUrl } : b
+      );
+      const updated = { ...content, banners: updatedBanners };
+      setContent(updated);
+      repos.settings.saveContent(updated);
+      window.dispatchEvent(new Event('bcc-settings-updated'));
+      addToast(`Foto "${item.title}" dari galeri berhasil dipasang ke slide banner!`, 'success');
+    }
+
+    setGalleryPickerTarget(null);
+  };
 
   const loadData = () => {
     setContent(repos.settings.getContent());
@@ -1101,34 +1139,55 @@ export const AdminContentPage: React.FC = () => {
                     Slide #{idx + 1}
                   </span>
 
-                  {/* Direct Change Photo Pill */}
-                  <label
-                    title="Klik untuk langsung ganti foto slide ini dari HP/komputer"
-                    style={{
-                      position: 'absolute',
-                      bottom: '6px',
-                      right: '6px',
-                      backgroundColor: 'rgba(59, 36, 22, 0.9)',
-                      color: 'var(--gold-500)',
-                      padding: '3px 8px',
-                      borderRadius: 'var(--radius-sm)',
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      border: '1px solid rgba(242, 193, 78, 0.4)',
-                    }}
-                  >
-                    <Upload size={12} /> Ganti Foto
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={e => handleDirectBannerImageUpload(b.id, e)}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
+                  {/* Direct Change Photo Pill / Gallery Picker */}
+                  <div style={{ position: 'absolute', bottom: '6px', right: '6px', display: 'flex', gap: '4px' }}>
+                    <label
+                      title="Klik untuk langsung ganti foto slide ini dari HP/komputer"
+                      style={{
+                        backgroundColor: 'rgba(59, 36, 22, 0.9)',
+                        color: 'var(--gold-500)',
+                        padding: '3px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        border: '1px solid rgba(242, 193, 78, 0.4)',
+                      }}
+                    >
+                      <Upload size={12} /> Unggah
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={e => handleDirectBannerImageUpload(b.id, e)}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setGalleryPickerTarget({ type: 'banner-direct', bannerId: b.id })}
+                      title="Ganti foto banner ini dengan foto dari Galeri"
+                      style={{
+                        backgroundColor: 'var(--gold-500)',
+                        color: 'var(--brown-900)',
+                        padding: '3px 8px',
+                        borderRadius: 'var(--radius-sm)',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        border: 'none',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                      }}
+                    >
+                      <ImageIcon size={12} /> Dari Galeri
+                    </button>
+                  </div>
                 </div>
 
                 {/* Banner Details */}
@@ -1346,7 +1405,7 @@ export const AdminContentPage: React.FC = () => {
 
               {/* Upload Controls */}
               <div style={{ flex: 1, minWidth: '260px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                   <label
                     style={{
                       display: 'inline-flex',
@@ -1362,7 +1421,7 @@ export const AdminContentPage: React.FC = () => {
                       boxShadow: 'var(--shadow-sm)',
                     }}
                   >
-                    <Upload size={16} /> Unggah Foto Header Baru dari Komputer
+                    <Upload size={16} /> Unggah Foto dari Komputer
                     <input
                       type="file"
                       accept="image/*"
@@ -1370,10 +1429,31 @@ export const AdminContentPage: React.FC = () => {
                       style={{ display: 'none' }}
                     />
                   </label>
-                  <span style={{ fontSize: '11px', color: 'var(--brown-500)', display: 'block', marginTop: '4px' }}>
-                    Mendukung JPG, PNG, WEBP (Otomatis dikompresi agar ringan)
-                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => setGalleryPickerTarget('hero')}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 18px',
+                      backgroundColor: 'var(--gold-500)',
+                      color: 'var(--brown-900)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      border: 'none',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
+                  >
+                    <ImageIcon size={16} /> Pilih dari Foto Galeri ({gallery.length})
+                  </button>
                 </div>
+                <span style={{ fontSize: '11px', color: 'var(--brown-500)', display: 'block', marginTop: '-4px' }}>
+                  Mendukung JPG, PNG, WEBP atau gunakan foto yang sudah diunggah di galeri
+                </span>
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <input
@@ -1410,6 +1490,62 @@ export const AdminContentPage: React.FC = () => {
                     <RotateCcw size={14} /> Reset
                   </button>
                 </div>
+
+                {/* Quick Horizontal Filmstrip of Gallery Photos */}
+                {gallery.length > 0 && (
+                  <div style={{ marginTop: '4px', paddingTop: '10px', borderTop: '1px dashed var(--cream-300)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--brown-900)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <ImageIcon size={13} color="var(--gold-600)" /> Pilih Cepat dari Foto Galeri:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setGalleryPickerTarget('hero')}
+                        style={{ fontSize: '11px', color: 'var(--brown-800)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        Lihat Semua ({gallery.length}) →
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
+                      {gallery.map(item => {
+                        const isSelected = content.heroImageUrl === item.imageUrl;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => handleSelectGalleryItemForTarget(item)}
+                            title={`Jadikan Foto Header: "${item.title}"`}
+                            style={{
+                              flexShrink: 0,
+                              width: '74px',
+                              height: '74px',
+                              borderRadius: 'var(--radius-md)',
+                              overflow: 'hidden',
+                              border: isSelected ? '3px solid var(--gold-600)' : '1px solid var(--cream-300)',
+                              padding: 0,
+                              cursor: 'pointer',
+                              position: 'relative',
+                              backgroundColor: '#fff',
+                              boxShadow: isSelected ? '0 2px 8px rgba(242, 193, 78, 0.45)' : 'none',
+                              transform: isSelected ? 'scale(1.04)' : 'none',
+                              transition: 'transform 0.15s, border-color 0.15s',
+                            }}
+                          >
+                            <img src={item.imageUrl} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            {isSelected && (
+                              <span style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: 'var(--gold-500)', color: 'var(--brown-900)', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 900 }}>
+                                ✓
+                              </span>
+                            )}
+                            <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: '9px', padding: '1px 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {item.title}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1678,7 +1814,7 @@ export const AdminContentPage: React.FC = () => {
 
               {/* Upload Controls */}
               <div style={{ flex: 1, minWidth: '260px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <div>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                   <label
                     style={{
                       display: 'inline-flex',
@@ -1694,7 +1830,7 @@ export const AdminContentPage: React.FC = () => {
                       boxShadow: 'var(--shadow-sm)',
                     }}
                   >
-                    <Upload size={16} /> Unggah Foto Hampers Baru dari Komputer
+                    <Upload size={16} /> Unggah Foto dari Komputer
                     <input
                       type="file"
                       accept="image/*"
@@ -1702,10 +1838,31 @@ export const AdminContentPage: React.FC = () => {
                       style={{ display: 'none' }}
                     />
                   </label>
-                  <span style={{ fontSize: '11px', color: 'var(--cream-300)', display: 'block', marginTop: '6px' }}>
-                    Mendukung JPG, PNG, WEBP (Otomatis dikompresi agar ringan)
-                  </span>
+
+                  <button
+                    type="button"
+                    onClick={() => setGalleryPickerTarget('hampers')}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '10px 18px',
+                      backgroundColor: 'rgba(255,255,255,0.18)',
+                      color: 'var(--cream-100)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      border: '1.5px solid var(--gold-500)',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
+                  >
+                    <ImageIcon size={16} color="var(--gold-500)" /> Pilih dari Foto Galeri ({gallery.length})
+                  </button>
                 </div>
+                <span style={{ fontSize: '11px', color: 'var(--cream-300)', display: 'block', marginTop: '-4px' }}>
+                  Mendukung JPG, PNG, WEBP atau gunakan foto yang sudah diunggah di galeri
+                </span>
 
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                   <input
@@ -1743,6 +1900,62 @@ export const AdminContentPage: React.FC = () => {
                     <RotateCcw size={14} /> Reset
                   </button>
                 </div>
+
+                {/* Quick Horizontal Filmstrip of Gallery Photos for Hampers */}
+                {gallery.length > 0 && (
+                  <div style={{ marginTop: '4px', paddingTop: '10px', borderTop: '1px dashed rgba(255,255,255,0.2)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--gold-300)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <ImageIcon size={13} color="var(--gold-400)" /> Pilih Cepat dari Foto Galeri:
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setGalleryPickerTarget('hampers')}
+                        style={{ fontSize: '11px', color: 'var(--gold-400)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                      >
+                        Lihat Semua ({gallery.length}) →
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '6px' }}>
+                      {gallery.map(item => {
+                        const isSelected = content.hampersBannerImageUrl === item.imageUrl;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => handleSelectGalleryItemForTarget(item)}
+                            title={`Jadikan Banner Hampers: "${item.title}"`}
+                            style={{
+                              flexShrink: 0,
+                              width: '74px',
+                              height: '74px',
+                              borderRadius: 'var(--radius-md)',
+                              overflow: 'hidden',
+                              border: isSelected ? '3px solid var(--gold-500)' : '1px solid rgba(255,255,255,0.25)',
+                              padding: 0,
+                              cursor: 'pointer',
+                              position: 'relative',
+                              backgroundColor: '#000',
+                              boxShadow: isSelected ? '0 2px 8px rgba(242, 193, 78, 0.45)' : 'none',
+                              transform: isSelected ? 'scale(1.04)' : 'none',
+                              transition: 'transform 0.15s, border-color 0.15s',
+                            }}
+                          >
+                            <img src={item.imageUrl} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            {isSelected && (
+                              <span style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: 'var(--gold-500)', color: 'var(--brown-900)', borderRadius: '50%', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 900 }}>
+                                ✓
+                              </span>
+                            )}
+                            <span style={{ position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff', fontSize: '9px', padding: '1px 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {item.title}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -2942,29 +3155,53 @@ export const AdminContentPage: React.FC = () => {
                   Foto Banner *
                 </label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <label
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px 16px',
-                      backgroundColor: 'var(--brown-900)',
-                      color: 'var(--gold-500)',
-                      borderRadius: 'var(--radius-md)',
-                      fontSize: '12px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      width: 'fit-content',
-                    }}
-                  >
-                    <Upload size={14} /> Pilih Foto dari HP / Komputer
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleBannerModalImageFile}
-                      style={{ display: 'none' }}
-                    />
-                  </label>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                    <label
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        padding: '8px 16px',
+                        backgroundColor: 'var(--brown-900)',
+                        color: 'var(--gold-500)',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        width: 'fit-content',
+                      }}
+                    >
+                      <Upload size={14} /> Pilih Foto dari HP / Komputer
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerModalImageFile}
+                        style={{ display: 'none' }}
+                      />
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => setGalleryPickerTarget('banner-modal')}
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        padding: '8px 16px',
+                        backgroundColor: 'var(--gold-500)',
+                        color: 'var(--brown-900)',
+                        borderRadius: 'var(--radius-md)',
+                        fontSize: '12px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                        border: 'none',
+                        boxShadow: 'var(--shadow-sm)',
+                      }}
+                    >
+                      <ImageIcon size={14} /> Ambil dari Foto Galeri ({gallery.length})
+                    </button>
+                  </div>
+
                   <input
                     type="text"
                     placeholder="Atau tempel URL gambar (https://...)"
@@ -2978,6 +3215,57 @@ export const AdminContentPage: React.FC = () => {
                       fontSize: '12px',
                     }}
                   />
+
+                  {/* Quick Filmstrip from Gallery inside Banner Modal */}
+                  {gallery.length > 0 && (
+                    <div style={{ backgroundColor: 'var(--cream-100)', padding: '10px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-200)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brown-800)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          <ImageIcon size={12} color="var(--gold-600)" /> Atau sentuh salah satu foto galeri di bawah:
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setGalleryPickerTarget('banner-modal')}
+                          style={{ fontSize: '11px', color: 'var(--brown-800)', fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          Semua ({gallery.length}) →
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', paddingBottom: '4px' }}>
+                        {gallery.map(item => {
+                          const isSelected = bannerImage === item.imageUrl;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={() => setBannerImage(item.imageUrl)}
+                              title={`Gunakan untuk banner: "${item.title}"`}
+                              style={{
+                                flexShrink: 0,
+                                width: '60px',
+                                height: '60px',
+                                borderRadius: 'var(--radius-sm)',
+                                overflow: 'hidden',
+                                border: isSelected ? '2px solid var(--gold-600)' : '1px solid var(--cream-300)',
+                                padding: 0,
+                                cursor: 'pointer',
+                                position: 'relative',
+                                backgroundColor: '#fff',
+                              }}
+                            >
+                              <img src={item.imageUrl} alt={item.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                              {isSelected && (
+                                <span style={{ position: 'absolute', top: '2px', right: '2px', backgroundColor: 'var(--gold-500)', color: 'var(--brown-900)', borderRadius: '50%', width: '14px', height: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '9px', fontWeight: 900 }}>
+                                  ✓
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {bannerImage && (
                     <div style={{ position: 'relative', width: '100%', height: '160px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '2px solid var(--gold-500)', marginTop: '4px' }}>
                       <img src={bannerImage} alt="Pratinjau Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -3098,6 +3386,28 @@ export const AdminContentPage: React.FC = () => {
           </form>
         </div>
       )}
+
+      {/* Universal Gallery Picker Modal */}
+      <GalleryPickerModal
+        isOpen={galleryPickerTarget !== null}
+        onClose={() => setGalleryPickerTarget(null)}
+        targetTitle={
+          galleryPickerTarget === 'hero'
+            ? 'Pilih Foto untuk Foto Header (Hero)'
+            : galleryPickerTarget === 'hampers'
+            ? 'Pilih Foto untuk Banner Promo Hampers'
+            : typeof galleryPickerTarget === 'object' && galleryPickerTarget?.type === 'banner-direct'
+            ? 'Ganti Foto Slide Banner Promo'
+            : 'Pilih Foto untuk Slide Banner Promo'
+        }
+        galleryItems={gallery}
+        onSelect={handleSelectGalleryItemForTarget}
+        onOpenUploadNew={() => {
+          const secGal = document.getElementById('sec-gallery');
+          secGal?.scrollIntoView({ behavior: 'smooth' });
+          setNewGalleryOpen(true);
+        }}
+      />
     </div>
   );
 };
