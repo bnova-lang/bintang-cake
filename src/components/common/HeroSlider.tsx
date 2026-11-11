@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, ArrowRight, Award, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { Sparkles, ArrowRight, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { Content, BannerItem } from '@/types';
 
 interface HeroSliderProps {
@@ -10,21 +10,21 @@ interface HeroSliderProps {
 export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
   const activeBanners: BannerItem[] = (content.banners || []).filter(b => b.active);
 
-  // If no active banners, synthesize a default slide from hero content
+  // Fallback slide if no active banners exist
   const slides: BannerItem[] =
     activeBanners.length > 0
       ? activeBanners
       : [
           {
             id: 'default-hero',
-            title: content.heroTitle || 'Hai Pelanggan Setia Bintang Cake and Cookies!',
+            title: content.heroTitle || 'Partner to Enjoy Your day!',
             subtitle:
               content.heroSubtitle ||
               'Kelezatan kue rumahan premium dipanggang segar setiap hari dengan bahan-bahan pilihan tanpa pengawet.',
-            badge: content.heroBadge || 'Panggangan Segar Dapur Samarinda',
+            badge: content.heroBadge || 'Hai...Pelanggan Setia Bintang Cake & Cookies',
             imageUrl:
               content.heroImageUrl ||
-              'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80',
+              '/images/banner-christmas-photo.jpg',
             buttonText: 'Lihat Seluruh Produk',
             linkUrl: '/produk',
             active: true,
@@ -107,209 +107,171 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       style={{
-        backgroundColor: 'var(--brown-900)',
+        backgroundColor: '#3B2416',
         color: 'var(--cream-100)',
-        padding: '48px 0 64px',
         position: 'relative',
         overflow: 'hidden',
-        minHeight: '440px',
+        minHeight: '420px',
         display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
+        alignItems: 'center',
       }}
     >
-      {/* Decorative Warm Ambient Glow */}
+      {/* 1. Full-Height Blended Background Image on the right (NO BOX / NO BORDER) */}
+      <div
+        key={`bg-${currentSlide.id}`}
+        style={{
+          position: 'absolute',
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: '60%',
+          backgroundImage: `url(${currentSlide.imageUrl})`,
+          backgroundPosition: 'center right',
+          backgroundSize: 'cover',
+          backgroundRepeat: 'no-repeat',
+          animation: 'heroSlideFade 0.5s ease-out',
+        }}
+        className="hero-slider-bg"
+      >
+        {/* Soft Brown Gradient Overlay: Fades from solid brown on the left into transparent on the right */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(to right, #3B2416 0%, rgba(59, 36, 22, 0.96) 12%, rgba(59, 36, 22, 0.6) 35%, rgba(59, 36, 22, 0.1) 65%, transparent 85%)',
+          }}
+          className="hero-slider-gradient"
+        />
+
+        {/* Top and Bottom soft vignetting to seamlessly integrate with header & page */}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            background:
+              'linear-gradient(to bottom, rgba(59, 36, 22, 0.25) 0%, transparent 15%, transparent 85%, rgba(59, 36, 22, 0.4) 100%)',
+          }}
+        />
+      </div>
+
+      {/* 2. Solid Brown Left Base to guarantee 100% text legibility */}
       <div
         style={{
           position: 'absolute',
-          top: '-100px',
-          right: '-80px',
-          width: '400px',
-          height: '400px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(242, 193, 78, 0.12) 0%, transparent 70%)',
-          pointerEvents: 'none',
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: '45%',
+          backgroundColor: '#3B2416',
+          zIndex: 1,
         }}
+        className="hero-slider-left-base"
       />
 
-      <div className="container" style={{ position: 'relative', zIndex: 2 }}>
+      {/* 3. Text Content Container (Left-aligned over the brown background) */}
+      <div className="container" style={{ position: 'relative', zIndex: 2, padding: '48px 16px 56px' }}>
         <div
-          key={currentSlide.id}
+          key={`content-${currentSlide.id}`}
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '40px',
-            alignItems: 'center',
-            transition: 'opacity 0.35s ease, transform 0.35s ease',
+            maxWidth: '540px',
             animation: 'heroSlideFade 0.4s ease-out',
           }}
         >
-          {/* Left Column: Badge, Title, Subtitle, CTA Buttons */}
-          <div>
-            <div
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                backgroundColor: 'rgba(242, 193, 78, 0.15)',
-                color: 'var(--gold-500)',
-                padding: '6px 14px',
-                borderRadius: 'var(--radius-full)',
-                fontSize: '13px',
-                fontWeight: 600,
-                marginBottom: '16px',
-                border: '1px solid rgba(242, 193, 78, 0.3)',
-              }}
-            >
-              <Sparkles size={16} />
-              <span>{currentSlide.badge || content.heroBadge || 'Panggangan Segar Dapur Samarinda'}</span>
-            </div>
-
-            <h1
-              style={{
-                fontSize: content.heroTitleFontFamily === 'script' ? 'clamp(36px, 6vw, 54px)' : 'clamp(30px, 4.8vw, 46px)',
-                color: content.heroTitleColor || 'var(--text-on-dark)',
-                fontFamily: getHeroTitleFont(),
-                fontStyle: content.heroTitleItalic ? 'italic' : 'normal',
-                fontWeight: content.heroTitleWeight === 'normal' ? 400 : content.heroTitleWeight === 'semibold' ? 600 : 700,
-                marginBottom: '16px',
-                lineHeight: content.heroTitleFontFamily === 'script' ? 1.25 : 1.18,
-                textShadow: '0 2px 10px rgba(0,0,0,0.3)',
-              }}
-            >
-              {currentSlide.title || content.heroTitle}
-            </h1>
-
-            <p
-              style={{
-                fontSize: '15.5px',
-                color: 'var(--cream-200)',
-                lineHeight: 1.6,
-                marginBottom: '28px',
-                maxWidth: '520px',
-              }}
-            >
-              {currentSlide.subtitle || content.heroSubtitle}
-            </p>
-
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>
-              <Link
-                to={currentSlide.linkUrl || '/produk'}
-                style={{
-                  backgroundColor: 'var(--gold-500)',
-                  color: 'var(--brown-900)',
-                  padding: '12px 26px',
-                  borderRadius: 'var(--radius-full)',
-                  fontWeight: 700,
-                  fontSize: '15px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: 'var(--shadow-md)',
-                  transition: 'transform 0.15s, box-shadow 0.15s, background-color 0.15s',
-                }}
-                className="hero-cta-btn"
-              >
-                <span>{currentSlide.buttonText || 'Lihat Seluruh Produk'}</span>
-                <ArrowRight size={18} />
-              </Link>
-
-              <Link
-                to="/spesial"
-                style={{
-                  backgroundColor: 'transparent',
-                  color: 'var(--cream-100)',
-                  border: '1px solid var(--gold-500)',
-                  padding: '12px 24px',
-                  borderRadius: 'var(--radius-full)',
-                  fontWeight: 600,
-                  fontSize: '15px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  transition: 'background-color 0.15s',
-                }}
-              >
-                <span>Paket Hampers & Spesial</span>
-              </Link>
-            </div>
+          {/* Outlined Badge */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(242, 193, 78, 0.12)',
+              color: 'var(--gold-500)',
+              padding: '6px 16px',
+              borderRadius: 'var(--radius-full)',
+              fontSize: '13px',
+              fontWeight: 600,
+              marginBottom: '18px',
+              border: '1px solid rgba(242, 193, 78, 0.45)',
+            }}
+          >
+            <Sparkles size={16} />
+            <span>{currentSlide.badge || content.heroBadge || 'Hai...Pelanggan Setia Bintang Cake & Cookies'}</span>
           </div>
 
-          {/* Right Column: High Quality Slide Image & Family Recipe Badge */}
-          <div style={{ position: 'relative' }}>
-            <div
-              style={{
-                borderRadius: 'var(--radius-xl)',
-                overflow: 'hidden',
-                boxShadow: 'var(--shadow-lg)',
-                border: '4px solid rgba(242, 193, 78, 0.35)',
-                aspectRatio: '4/3',
-                backgroundColor: 'rgba(0,0,0,0.2)',
-                position: 'relative',
-              }}
-            >
-              <img
-                src={currentSlide.imageUrl}
-                alt={currentSlide.title || 'Bintang Cake & Cookies'}
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
-              />
-            </div>
+          {/* Heading */}
+          <h1
+            style={{
+              fontSize:
+                content.heroTitleFontFamily === 'script' ? 'clamp(36px, 6vw, 56px)' : 'clamp(32px, 5vw, 48px)',
+              color: content.heroTitleColor || '#FFFFFF',
+              fontFamily: getHeroTitleFont(),
+              fontStyle: content.heroTitleItalic !== false ? 'italic' : 'normal',
+              fontWeight: content.heroTitleWeight === 'normal' ? 400 : 700,
+              marginBottom: '16px',
+              lineHeight: 1.2,
+              textShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            }}
+          >
+            {currentSlide.title || content.heroTitle || 'Partner to Enjoy Your day!'}
+          </h1>
 
-            {/* Quality & Recipe Floating Card */}
-            <div
+          {/* Subtitle */}
+          <p
+            style={{
+              fontSize: '15.5px',
+              color: 'rgba(255, 248, 234, 0.9)',
+              lineHeight: 1.65,
+              marginBottom: '28px',
+              maxWidth: '490px',
+              textShadow: '0 1px 4px rgba(0,0,0,0.2)',
+            }}
+          >
+            {currentSlide.subtitle ||
+              content.heroSubtitle ||
+              'Kelezatan kue rumahan premium dipanggang segar setiap hari dengan bahan-bahan pilihan tanpa pengawet.'}
+          </p>
+
+          {/* Action Buttons */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', alignItems: 'center' }}>
+            <Link
+              to={currentSlide.linkUrl || '/produk'}
               style={{
-                position: 'absolute',
-                bottom: '-16px',
-                right: '16px',
-                backgroundColor: 'var(--ivory-50)',
+                backgroundColor: 'var(--gold-500)',
                 color: 'var(--brown-900)',
-                padding: '10px 18px',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-                display: 'flex',
+                padding: '12px 26px',
+                borderRadius: 'var(--radius-full)',
+                fontWeight: 700,
+                fontSize: '15px',
+                display: 'inline-flex',
                 alignItems: 'center',
-                gap: '12px',
-                border: '1px solid var(--cream-300)',
+                gap: '8px',
+                boxShadow: 'var(--shadow-md)',
+                transition: 'transform 0.15s, box-shadow 0.15s, background-color 0.15s',
+              }}
+              className="hero-cta-btn"
+            >
+              <span>{currentSlide.buttonText || 'Lihat Seluruh Produk'}</span>
+              <ArrowRight size={18} />
+            </Link>
+
+            <Link
+              to="/spesial"
+              style={{
+                backgroundColor: 'rgba(59, 36, 22, 0.65)',
+                color: 'var(--cream-100)',
+                border: '1px solid rgba(242, 193, 78, 0.45)',
+                padding: '12px 24px',
+                borderRadius: 'var(--radius-full)',
+                fontWeight: 600,
+                fontSize: '15px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'background-color 0.15s',
               }}
             >
-              <div
-                style={{
-                  backgroundColor: 'var(--gold-100)',
-                  color: 'var(--gold-600)',
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: 'var(--radius-full)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <Award size={22} />
-              </div>
-              <div>
-                <span
-                  style={{
-                    fontSize: '11px',
-                    textTransform: 'uppercase',
-                    color: 'var(--text-muted)',
-                    display: 'block',
-                    fontWeight: 700,
-                    letterSpacing: '0.5px',
-                  }}
-                >
-                  {content.heroCardLabel || 'Resep Keluarga'}
-                </span>
-                <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-serif)' }}>
-                  {content.heroCardText || '100% Butter & Bahan Premium'}
-                </span>
-              </div>
-            </div>
+              <span>Paket Hampers & Spesial</span>
+            </Link>
           </div>
         </div>
       </div>
@@ -324,14 +286,14 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
             aria-label="Slide sebelumnya"
             style={{
               position: 'absolute',
-              left: '12px',
+              left: '14px',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: '42px',
-              height: '42px',
+              width: '38px',
+              height: '38px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(59, 36, 22, 0.75)',
-              border: '1px solid rgba(242, 193, 78, 0.4)',
+              backgroundColor: 'rgba(42, 26, 16, 0.75)',
+              border: '1px solid rgba(242, 193, 78, 0.35)',
               color: 'var(--gold-500)',
               display: 'flex',
               alignItems: 'center',
@@ -343,7 +305,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
             }}
             className="slider-nav-btn"
           >
-            <ChevronLeft size={22} />
+            <ChevronLeft size={20} />
           </button>
 
           {/* Arrow Right */}
@@ -353,14 +315,14 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
             aria-label="Slide berikutnya"
             style={{
               position: 'absolute',
-              right: '12px',
+              right: '14px',
               top: '50%',
               transform: 'translateY(-50%)',
-              width: '42px',
-              height: '42px',
+              width: '38px',
+              height: '38px',
               borderRadius: '50%',
-              backgroundColor: 'rgba(59, 36, 22, 0.75)',
-              border: '1px solid rgba(242, 193, 78, 0.4)',
+              backgroundColor: 'rgba(42, 26, 16, 0.75)',
+              border: '1px solid rgba(242, 193, 78, 0.35)',
               color: 'var(--gold-500)',
               display: 'flex',
               alignItems: 'center',
@@ -372,20 +334,19 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
             }}
             className="slider-nav-btn"
           >
-            <ChevronRight size={22} />
+            <ChevronRight size={20} />
           </button>
 
-          {/* Bottom Dots & Controls Bar */}
+          {/* Bottom Capsule Pill Indicator [ 🟡 | 1/2 ▶ ] */}
           <div
             style={{
               position: 'absolute',
-              bottom: '16px',
+              bottom: '18px',
               left: 0,
               right: 0,
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              gap: '12px',
               zIndex: 10,
             }}
           >
@@ -394,11 +355,12 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '8px',
-                backgroundColor: 'rgba(42, 26, 16, 0.75)',
-                backdropFilter: 'blur(4px)',
-                padding: '6px 14px',
+                backgroundColor: 'rgba(32, 19, 12, 0.85)',
+                backdropFilter: 'blur(6px)',
+                padding: '5px 14px',
                 borderRadius: 'var(--radius-full)',
-                border: '1px solid rgba(242, 193, 78, 0.3)',
+                border: '1px solid rgba(242, 193, 78, 0.35)',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.35)',
               }}
             >
               {slides.map((slide, idx) => {
@@ -410,7 +372,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
                     onClick={() => goToSlide(idx)}
                     aria-label={`Buka slide ${idx + 1}`}
                     style={{
-                      width: isActive ? '24px' : '8px',
+                      width: isActive ? '22px' : '8px',
                       height: '8px',
                       borderRadius: 'var(--radius-full)',
                       backgroundColor: isActive ? 'var(--gold-500)' : 'rgba(255,255,255,0.35)',
@@ -423,12 +385,14 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
                 );
               })}
 
+              <span style={{ width: '1px', height: '12px', backgroundColor: 'rgba(255,255,255,0.25)', margin: '0 2px' }} />
+
               <span
                 style={{
                   fontSize: '11px',
                   fontWeight: 700,
-                  color: 'var(--cream-200)',
-                  marginLeft: '4px',
+                  color: 'var(--cream-100)',
+                  letterSpacing: '0.5px',
                 }}
               >
                 {currentIndex + 1}/{totalSlides}
@@ -451,7 +415,7 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
                   marginLeft: '2px',
                 }}
               >
-                {isPaused ? <Play size={12} /> : <Pause size={12} />}
+                {isPaused ? <Play size={11} fill="currentColor" /> : <Pause size={11} fill="currentColor" />}
               </button>
             </div>
           </div>
@@ -461,12 +425,12 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
       <style>{`
         @keyframes heroSlideFade {
           0% {
-            opacity: 0.2;
-            transform: translateY(6px);
+            opacity: 0.15;
+            transform: scale(1.02);
           }
           100% {
             opacity: 1;
-            transform: translateY(0);
+            transform: scale(1);
           }
         }
         .slider-nav-btn:hover {
@@ -477,7 +441,17 @@ export const HeroSlider: React.FC<HeroSliderProps> = ({ content }) => {
           transform: translateY(-2px);
           box-shadow: 0 6px 20px rgba(242, 193, 78, 0.45) !important;
         }
-        @media (max-width: 640px) {
+        @media (max-width: 768px) {
+          .hero-slider-bg {
+            width: 100% !important;
+            opacity: 0.38;
+          }
+          .hero-slider-gradient {
+            background: linear-gradient(to bottom, rgba(59, 36, 22, 0.45) 0%, rgba(59, 36, 22, 0.88) 60%, #3B2416 100%) !important;
+          }
+          .hero-slider-left-base {
+            display: none !important;
+          }
           .slider-nav-btn {
             display: none !important;
           }
