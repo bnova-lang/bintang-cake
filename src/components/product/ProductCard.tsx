@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, Clock } from 'lucide-react';
 import { Product } from '@/types';
 import { formatRupiah } from '@/utils/format';
 import { useCart } from '@/app/providers/CartContext';
 import { useToast } from '@/app/providers/ToastContext';
+import { QuickVariantModal } from './QuickVariantModal';
 
 interface ProductCardProps {
   product: Product;
@@ -13,6 +14,7 @@ interface ProductCardProps {
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addItem } = useCart();
   const { showToast } = useToast();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const primaryImage = product.images.find(img => img.isPrimary)?.url || product.images[0]?.url || 'https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=600&auto=format&fit=crop&q=80';
 
@@ -37,13 +39,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isSoldOut || !defaultVariant) return;
+    if (isSoldOut) return;
 
-    const ok = addItem(product.id, defaultVariant.id, 1);
-    if (ok) {
-      showToast(`${product.name} (${defaultVariant.name}) ditambahkan ke keranjang!`, 'success');
-    } else {
-      showToast('Stok tidak mencukupi untuk varian ini.', 'warning');
+    // If product has multiple packages/variants, open modal so customer can choose
+    if (activeVariants.length > 1) {
+      setIsModalOpen(true);
+      return;
+    }
+
+    // If only 1 variant exists, add directly
+    if (defaultVariant) {
+      const ok = addItem(product.id, defaultVariant.id, 1);
+      if (ok) {
+        showToast(`${product.name} (${defaultVariant.name}) ditambahkan ke keranjang!`, 'success');
+      } else {
+        showToast('Stok tidak mencukupi untuk varian ini.', 'warning');
+      }
     }
   };
 
@@ -182,7 +193,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <button
             onClick={handleQuickAdd}
             disabled={isSoldOut}
-            aria-label={`Tambah ${product.name} ke keranjang`}
+            title={activeVariants.length > 1 ? `Pilih paket ${product.name}` : `Tambah ${product.name} ke keranjang`}
+            aria-label={activeVariants.length > 1 ? `Pilih paket kemasan untuk ${product.name}` : `Tambah ${product.name} ke keranjang`}
             style={{
               backgroundColor: isSoldOut ? 'var(--cream-300)' : 'var(--gold-500)',
               color: isSoldOut ? 'var(--text-muted)' : 'var(--brown-900)',
@@ -193,13 +205,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               alignItems: 'center',
               justifyContent: 'center',
               cursor: isSoldOut ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.2s',
+              transition: 'background-color 0.2s, transform 0.15s, box-shadow 0.15s',
+              border: 'none',
+              boxShadow: isSoldOut ? 'none' : '0 2px 8px rgba(242, 193, 78, 0.4)',
             }}
+            className="product-quick-btn"
           >
             <ShoppingBag size={18} />
           </button>
         </div>
       </div>
+
+      {/* Quick Select Modal for choosing variant & packaging */}
+      {activeVariants.length > 1 && (
+        <QuickVariantModal
+          product={product}
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+        />
+      )}
 
       <style>{`
         .product-card:hover {
@@ -208,6 +232,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         }
         .product-card:hover .product-img {
           transform: scale(1.04);
+        }
+        .product-quick-btn:hover:not(:disabled) {
+          transform: scale(1.08);
+          background-color: var(--gold-600) !important;
         }
       `}</style>
     </div>

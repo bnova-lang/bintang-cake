@@ -271,31 +271,56 @@ export const ProductDetailPage: React.FC = () => {
           {/* Packaging / Variant Selection */}
           {activeVariants.length > 0 && (
             <div>
-              <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--brown-900)', display: 'block', marginBottom: '8px' }}>
-                Pilihan Kemasan & Varian:
-              </label>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--brown-900)' }}>
+                  Pilihan Kemasan & Varian Paket:
+                </label>
+                <span style={{ fontSize: '11.5px', color: 'var(--gold-700)', fontWeight: 600 }}>
+                  *Klik paket yang ingin dibeli
+                </span>
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
                 {activeVariants.map(variant => {
                   const isSelected = selectedVariant?.id === variant.id;
                   return (
                     <button
                       key={variant.id}
+                      type="button"
                       onClick={() => setSelectedVariantId(variant.id)}
                       style={{
                         padding: '12px 14px',
-                        borderRadius: 'var(--radius-md)',
+                        borderRadius: 'var(--radius-lg)',
                         border: isSelected ? '2px solid var(--gold-600)' : '1px solid var(--cream-300)',
-                        backgroundColor: isSelected ? 'var(--ivory-50)' : 'var(--cream-100)',
+                        backgroundColor: isSelected ? 'rgba(242, 193, 78, 0.12)' : 'var(--cream-100)',
                         textAlign: 'left',
-                        boxShadow: isSelected ? 'var(--shadow-sm)' : 'none',
+                        boxShadow: isSelected ? '0 2px 10px rgba(242, 193, 78, 0.25)' : 'none',
                         cursor: 'pointer',
-                        transition: 'all 0.2s',
+                        transition: 'all 0.15s ease',
                       }}
                     >
-                      <div style={{ fontSize: '13px', fontWeight: 700, color: isSelected ? 'var(--brown-900)' : 'var(--text-primary)' }}>
-                        {variant.name}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
+                        <span style={{ fontSize: '13.5px', fontWeight: 700, color: isSelected ? 'var(--brown-900)' : 'var(--text-primary)' }}>
+                          {variant.name}
+                        </span>
+                        {isSelected && (
+                          <span
+                            style={{
+                              backgroundColor: 'var(--gold-500)',
+                              color: 'var(--brown-900)',
+                              borderRadius: 'var(--radius-full)',
+                              padding: '2px 7px',
+                              fontSize: '10px',
+                              fontWeight: 800,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '2px',
+                            }}
+                          >
+                            <Check size={11} strokeWidth={3} /> Terpilih
+                          </span>
+                        )}
                       </div>
-                      <div style={{ fontSize: '13px', color: 'var(--brown-800)', fontWeight: 600, marginTop: '2px' }}>
+                      <div style={{ fontSize: '13.5px', color: isSelected ? 'var(--brown-900)' : 'var(--brown-800)', fontWeight: 600 }}>
                         {variant.maxPrice && variant.maxPrice > variant.price
                           ? `${formatRupiah(variant.price)} - ${formatRupiah(variant.maxPrice)}`
                           : formatRupiah(variant.price)}
