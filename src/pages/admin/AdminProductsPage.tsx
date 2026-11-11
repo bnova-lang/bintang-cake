@@ -62,14 +62,32 @@ export const AdminProductsPage: React.FC = () => {
     setNewArrival(false);
     setVariants([
       {
-        id: 'var-' + Date.now(),
-        name: 'Toples 500g',
+        id: 'var-1-' + Date.now(),
+        name: 'Toples Bulat Segel 500 gr',
         packagingType: 'toples_500g',
         price: 95000,
-        stockQuantity: 10,
+        stockQuantity: 15,
         active: true,
         sortOrder: 1,
         isDefault: true,
+      },
+      {
+        id: 'var-2-' + Date.now(),
+        name: 'Toples Persegi 350 gr',
+        packagingType: 'toples_350g',
+        price: 75000,
+        stockQuantity: 15,
+        active: true,
+        sortOrder: 2,
+      },
+      {
+        id: 'var-3-' + Date.now(),
+        name: 'Mini Pack 150 gr',
+        packagingType: 'mini_pack_150g',
+        price: 40000,
+        stockQuantity: 20,
+        active: true,
+        sortOrder: 3,
       },
     ]);
     setModalOpen(true);
@@ -93,20 +111,24 @@ export const AdminProductsPage: React.FC = () => {
     setModalOpen(true);
   };
 
-  const handleAddVariant = () => {
+  const handleAddPresetVariant = (presetName: string, packagingType: string, defaultPrice: number) => {
     setVariants([
       ...variants,
       {
         id: 'var-' + Date.now() + '-' + Math.random().toString(36).substring(2, 5),
-        name: 'Varian Baru',
-        packagingType: 'standard',
-        price: 50000,
+        name: presetName,
+        packagingType,
+        price: defaultPrice,
         maxPrice: undefined,
         stockQuantity: 10,
         active: true,
         sortOrder: variants.length + 1,
       },
     ]);
+  };
+
+  const handleAddVariant = () => {
+    handleAddPresetVariant('Varian Baru', 'standard', 50000);
   };
 
   const handleRemoveVariant = (id: string) => {
@@ -447,7 +469,49 @@ export const AdminProductsPage: React.FC = () => {
                     Atur nama varian/kemasan, harga terendah, harga tertinggi (s/d - opsional), dan stok.
                   </span>
                 </div>
-                <button type="button" onClick={handleAddVariant} style={{ fontSize: '12px', color: 'var(--brown-800)', fontWeight: 700, cursor: 'pointer', backgroundColor: 'var(--cream-200)', padding: '4px 10px', borderRadius: 'var(--radius-sm)', border: 'none' }}>+ Tambah Varian</button>
+                <button type="button" onClick={handleAddVariant} style={{ fontSize: '12px', color: 'var(--brown-800)', fontWeight: 700, cursor: 'pointer', backgroundColor: 'var(--cream-200)', padding: '5px 12px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--cream-300)' }}>+ Tambah Varian</button>
+              </div>
+
+              {/* Quick Preset Buttons for Packaging */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center', marginBottom: '10px', backgroundColor: 'var(--ivory-50)', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-200)' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--brown-800)', marginRight: '4px' }}>
+                  + Contoh Kemasan Cepat:
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleAddPresetVariant('Toples Bulat Segel 500 gr', 'toples_500g', 95000)}
+                  style={{ fontSize: '11px', padding: '3px 8px', borderRadius: 'var(--radius-full)', backgroundColor: '#fff', border: '1px solid var(--gold-500)', color: 'var(--brown-900)', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  + Toples 500g
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPresetVariant('Toples Persegi 350 gr', 'toples_350g', 75000)}
+                  style={{ fontSize: '11px', padding: '3px 8px', borderRadius: 'var(--radius-full)', backgroundColor: '#fff', border: '1px solid var(--gold-500)', color: 'var(--brown-900)', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  + Toples 350g
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPresetVariant('Mini Pack 150 gr', 'mini_pack_150g', 40000)}
+                  style={{ fontSize: '11px', padding: '3px 8px', borderRadius: 'var(--radius-full)', backgroundColor: '#fff', border: '1px solid var(--gold-500)', color: 'var(--brown-900)', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  + Mini Pack 150g
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPresetVariant('Toples Tabung Silinder 400 gr', 'toples_tabung', 85000)}
+                  style={{ fontSize: '11px', padding: '3px 8px', borderRadius: 'var(--radius-full)', backgroundColor: '#fff', border: '1px solid var(--gold-500)', color: 'var(--brown-900)', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  + Toples Tabung
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPresetVariant('Box Hampers Isi 2 Toples', 'box_hampers_2', 195000)}
+                  style={{ fontSize: '11px', padding: '3px 8px', borderRadius: 'var(--radius-full)', backgroundColor: '#fff', border: '1px solid var(--gold-500)', color: 'var(--brown-900)', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  + Box Hampers
+                </button>
               </div>
 
               {/* Column Headers */}

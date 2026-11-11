@@ -21,9 +21,9 @@ describe('LocalStorage Repositories & Business Logic', () => {
     orderRepo = new LocalStorageOrderRepository();
   });
 
-  it('initializes seed data with 6 categories and demo products', () => {
+  it('initializes seed data with 7 categories and demo products', () => {
     const categories = catRepo.getAll();
-    expect(categories.length).toBe(6);
+    expect(categories.length).toBe(7);
     expect(categories.map(c => c.slug)).toEqual([
       'cake',
       'cookies',
@@ -31,6 +31,7 @@ describe('LocalStorage Repositories & Business Logic', () => {
       'lapis-legit',
       'hampers-parcel',
       'paket-custom',
+      'pilihan-kemasan',
     ]);
 
     const products = prodRepo.getAll();

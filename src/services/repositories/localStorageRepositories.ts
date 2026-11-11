@@ -684,6 +684,21 @@ export function initializeSeedData(forceReset = false): void {
         catUpdated = true;
       }
     });
+
+    // Ensure 'Pilihan Kemasan' category exists
+    const hasKemasanCat = categories.some(c => c.id === 'cat-kemasan' || c.slug === 'pilihan-kemasan');
+    if (!hasKemasanCat) {
+      categories.push({
+        id: 'cat-kemasan',
+        name: 'Pilihan Kemasan',
+        slug: 'pilihan-kemasan',
+        image: 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=600&auto=format&fit=crop&q=80',
+        active: true,
+        sortOrder: 7,
+      });
+      catUpdated = true;
+    }
+
     if (catUpdated) LocalStorageService.setItem('categories', categories);
   }
 
@@ -698,6 +713,43 @@ export function initializeSeedData(forceReset = false): void {
         }
       });
     });
+
+    // Ensure 'prod-pilihan-kemasan' exists
+    const hasKemasanProd = products.some(p => p.id === 'prod-pilihan-kemasan');
+    if (!hasKemasanProd) {
+      const kemasanProd = SEED_PRODUCTS.find(p => p.id === 'prod-pilihan-kemasan');
+      if (kemasanProd) {
+        products.push(kemasanProd);
+        prodUpdated = true;
+      }
+    }
+
+    // Ensure Nastar has multiple packaging size variants
+    const nastar = products.find(p => p.id === 'prod-nastar-wisman');
+    if (nastar && !nastar.variants.some(v => v.id === 'var-nastar-150g')) {
+      nastar.variants.push(
+        {
+          id: 'var-nastar-150g',
+          name: 'Mini Pack 150 gr',
+          packagingType: 'mini_pack_150g',
+          price: 40000,
+          stockQuantity: 20,
+          active: true,
+          sortOrder: 2,
+        },
+        {
+          id: 'var-nastar-350g',
+          name: 'Toples Persegi 350 gr',
+          packagingType: 'toples_350g',
+          price: 75000,
+          stockQuantity: 15,
+          active: true,
+          sortOrder: 3,
+        }
+      );
+      prodUpdated = true;
+    }
+
     if (prodUpdated) LocalStorageService.setItem('products', products);
   }
 

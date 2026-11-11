@@ -42,6 +42,7 @@ const DEFAULT_CATEGORY_IMAGES: Record<string, string> = {
   'cat-lapis': 'https://images.unsplash.com/photo-1605138693981-6c8a5ea87796?w=600&auto=format&fit=crop&q=80',
   'cat-hampers': 'https://images.unsplash.com/photo-1513201099705-a9746e1e201f?w=600&auto=format&fit=crop&q=80',
   'cat-custom': 'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=600&auto=format&fit=crop&q=80',
+  'cat-kemasan': 'https://images.unsplash.com/photo-1590080875515-8a3a8dc5735e?w=600&auto=format&fit=crop&q=80',
 };
 
 const DEFAULT_PRODUCT_IMAGES: Record<string, string> = {
@@ -856,7 +857,7 @@ export const AdminContentPage: React.FC = () => {
             fontWeight: 700,
           }}
         >
-          📂 Foto Kategori (6)
+          📂 Foto Kategori ({categories?.length || 7})
         </a>
         <a
           href="#sec-featured"
@@ -2185,7 +2186,7 @@ export const AdminContentPage: React.FC = () => {
           </div>
 
           <p style={{ fontSize: '13px', color: 'var(--brown-600)', marginBottom: '20px', lineHeight: 1.5 }}>
-            Ganti semua gambar yang tampil pada 6 kartu <b>"Kategori Pilihan"</b> di halaman depan toko. Klik tombol <b>"Unggah Foto Baru"</b> untuk memilih foto kue dari komputer/HP Anda (otomatis dikompresi agar jernih dan hemat penyimpanan).
+            Ganti semua gambar yang tampil pada kartu <b>"Kategori Pilihan"</b> di halaman depan toko. Klik tombol <b>"Unggah Foto Baru"</b> untuk memilih foto kue dari komputer/HP Anda (otomatis dikompresi agar jernih dan hemat penyimpanan).
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
@@ -3060,6 +3061,7 @@ export const AdminContentPage: React.FC = () => {
                     <option value="/kategori/cat-cookies">Kategori Cookies (/kategori/cat-cookies)</option>
                     <option value="/kategori/cat-lapis">Kategori Lapis Legit (/kategori/cat-lapis)</option>
                     <option value="/kategori/cat-custom">Paket Custom (/kategori/cat-custom)</option>
+                    <option value="/kategori/pilihan-kemasan">Pilihan Kemasan (/kategori/pilihan-kemasan)</option>
                     <option value="/cara-memesan">Panduan Cara Pesan (/cara-memesan)</option>
                     <option value="/tentang-kami">Tentang Kami (/tentang-kami)</option>
                   </select>
