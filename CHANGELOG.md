@@ -9,6 +9,12 @@ Kategori: `Ditambahkan`, `Diubah`, `Diperbaiki`, `Dihapus`, `Keamanan`, `Keputus
 ## [Belum dirilis]
 
 ### Ditambahkan
+- **Fitur Hero Slider / Banner Dinamis & Pengelola Unggah Banner Kapan Saja (`/` & `/admin/konten`):**
+  - Menghadirkan komponen Hero Slider / Banner interaktif (`HeroSlider.tsx`) di halaman beranda toko dengan transisi animasi halus, tombol navigasi panah kiri/kanan, indikator titik (*pagination dots*), penghitung slide, fitur jeda otomatis saat di-hover, serta dukungan usapan jari (*touch swipe*) untuk pengguna HP.
+  - Menyediakan panel admin **"Kelola Hero Slider & Banner Beranda"** di `/admin/konten` lengkap dengan fitur unggah foto banner langsung dari HP/laptop (kompresi otomatis canvas ramah memori ~60 KB), kolom judul, subtitle, lencana badge, teks tombol, dan pilihan tautan tujuan.
+  - Menyediakan tombol cepat **"Ganti Foto"** pada setiap kartu slide banner untuk mengganti gambar promosi sewaktu-waktu dengan mudah.
+  - Fitur geser urutan slide (naik/turun), tombol pengalih status aktif/nonaktif, serta pengaturan rotasi otomatis (*Auto-Slide*) dengan opsi kecepatan pergantian slide (3, 5, 7, atau 10 detik).
+  - Sinkronisasi instan banner ke LocalStorage, IndexedDB, dan Supabase Cloud lintas perangkat.
 - **Pembaruan Kredensial Resmi Admin Toko (`/admin/login`):**
   - Mengatur akun resmi admin toko dengan Username: `bintang` dan Password: `Nadin13` terenkripsi aman PBKDF2.
   - Menambahkan migrasi otomatis `seedVersion: 5` pada `localStorageRepositories.ts` agar data akun langsung sinkron pada browser yang sudah berjalan.

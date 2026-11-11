@@ -273,9 +273,13 @@ export interface StoreSettings {
 export interface BannerItem {
   id: string;
   title: string;
+  subtitle?: string;
+  badge?: string;
   imageUrl: string;
   linkUrl?: string;
+  buttonText?: string;
   active: boolean;
+  sortOrder?: number;
 }
 
 export interface Content {
@@ -289,6 +293,9 @@ export interface Content {
   heroTitleItalic?: boolean;
   heroTitleWeight?: 'normal' | 'semibold' | 'bold' | string;
   heroTitleColor?: string;
+  heroSliderEnabled?: boolean;
+  heroSliderInterval?: number; // detik (default: 5)
+  heroSliderAutoPlay?: boolean;
   announcements?: string[];
   announcementText?: string;
   announcementActive?: boolean;

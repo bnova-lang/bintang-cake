@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Sparkles, ArrowRight, CheckCircle2, Heart, Award, ShieldCheck, ChevronRight } from 'lucide-react';
 import { repos } from '@/services/repositories';
 import { ProductCard } from '@/components/product/ProductCard';
+import { HeroSlider } from '@/components/common/HeroSlider';
 
 export const HomePage: React.FC = () => {
   const location = useLocation();
@@ -30,135 +31,10 @@ export const HomePage: React.FC = () => {
   const featuredProducts = useMemo(() => allProducts.filter(p => p.featured), [allProducts]);
   const newArrivals = useMemo(() => allProducts.filter(p => p.newArrival), [allProducts]);
 
-  const getHeroTitleFont = () => {
-    switch (content.heroTitleFontFamily) {
-      case 'script':
-        return "'Dancing Script', 'Brush Script MT', cursive, serif";
-      case 'cormorant':
-        return "'Cormorant Garamond', Georgia, serif";
-      case 'sans':
-        return "var(--font-sans)";
-      case 'georgia':
-        return "Georgia, 'Times New Roman', serif";
-      case 'playfair':
-      default:
-        return "var(--font-serif)";
-    }
-  };
-
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-      {/* Hero Section */}
-      <section style={{ backgroundColor: 'var(--brown-900)', color: 'var(--cream-100)', padding: '48px 0 64px', position: 'relative', overflow: 'hidden' }}>
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px', alignItems: 'center' }}>
-          <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(242, 193, 78, 0.15)', color: 'var(--gold-500)', padding: '6px 14px', borderRadius: 'var(--radius-full)', fontSize: '13px', fontWeight: 600, marginBottom: '16px' }}>
-              <Sparkles size={16} />
-              <span>{content.heroBadge || 'Panggangan Segar Dapur Samarinda'}</span>
-            </div>
-            <h1
-              style={{
-                fontSize: content.heroTitleFontFamily === 'script' ? 'clamp(36px, 6vw, 54px)' : 'clamp(32px, 5vw, 48px)',
-                color: content.heroTitleColor || 'var(--text-on-dark)',
-                fontFamily: getHeroTitleFont(),
-                fontStyle: content.heroTitleItalic ? 'italic' : 'normal',
-                fontWeight: content.heroTitleWeight === 'normal' ? 400 : content.heroTitleWeight === 'semibold' ? 600 : 700,
-                marginBottom: '16px',
-                lineHeight: content.heroTitleFontFamily === 'script' ? 1.25 : 1.15,
-                textShadow: '0 2px 8px rgba(0,0,0,0.2)',
-              }}
-            >
-              {content.heroTitle}
-            </h1>
-            <p style={{ fontSize: '16px', color: 'var(--cream-200)', lineHeight: 1.6, marginBottom: '28px', maxWidth: '520px' }}>
-              {content.heroSubtitle}
-            </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
-              <Link
-                to="/produk"
-                style={{
-                  backgroundColor: 'var(--gold-500)',
-                  color: 'var(--brown-900)',
-                  padding: '12px 24px',
-                  borderRadius: 'var(--radius-full)',
-                  fontWeight: 700,
-                  fontSize: '15px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  boxShadow: 'var(--shadow-md)',
-                }}
-              >
-                <span>Lihat Seluruh Produk</span>
-                <ArrowRight size={18} />
-              </Link>
-              <Link
-                to="/spesial"
-                style={{
-                  backgroundColor: 'transparent',
-                  color: 'var(--cream-100)',
-                  border: '1px solid var(--gold-500)',
-                  padding: '12px 24px',
-                  borderRadius: 'var(--radius-full)',
-                  fontWeight: 600,
-                  fontSize: '15px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}
-              >
-                <span>Paket Hampers & Spesial</span>
-              </Link>
-            </div>
-          </div>
-
-          <div style={{ position: 'relative' }}>
-            <div
-              style={{
-                borderRadius: 'var(--radius-xl)',
-                overflow: 'hidden',
-                boxShadow: 'var(--shadow-lg)',
-                border: '4px solid rgba(242, 193, 78, 0.3)',
-                aspectRatio: '4/3',
-              }}
-            >
-              <img
-                src={content.heroImageUrl || (content.banners && content.banners[0]?.imageUrl) || 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80'}
-                alt="Bintang Cake & Cookies"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            </div>
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '-16px',
-                right: '16px',
-                backgroundColor: 'var(--ivory-50)',
-                color: 'var(--brown-900)',
-                padding: '12px 20px',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-md)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                border: '1px solid var(--cream-300)',
-              }}
-            >
-              <div style={{ backgroundColor: 'var(--gold-100)', color: 'var(--gold-600)', width: '38px', height: '38px', borderRadius: 'var(--radius-full)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Award size={22} />
-              </div>
-              <div>
-                <span style={{ fontSize: '11px', textTransform: 'uppercase', color: 'var(--text-muted)', display: 'block', fontWeight: 700 }}>
-                  {content.heroCardLabel || 'Resep Keluarga'}
-                </span>
-                <span style={{ fontSize: '14px', fontWeight: 700, fontFamily: 'var(--font-serif)' }}>
-                  {content.heroCardText || '100% Butter & Bahan Premium'}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Section / Slider / Banner */}
+      <HeroSlider content={content} />
 
       {/* Announcements Bar */}
       {Boolean(content.announcements && content.announcements.length > 0) && (

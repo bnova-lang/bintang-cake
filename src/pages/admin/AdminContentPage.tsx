@@ -19,9 +19,17 @@ import {
   Cookie,
   ArrowUpRight,
   ExternalLink,
+  Sliders,
+  MoveUp,
+  MoveDown,
+  Eye,
+  Check,
+  X,
+  Edit2,
+  RefreshCw,
 } from 'lucide-react';
 import { repos } from '@/services/repositories';
-import { Content, GalleryItem, Category, Product } from '@/types';
+import { Content, GalleryItem, Category, Product, BannerItem } from '@/types';
 import { useToast } from '@/app/providers/ToastContext';
 import { formatRupiah } from '@/utils/format';
 import { indexedDBStorage, StorageCapacity } from '@/services/storage/indexedDB';
@@ -57,6 +65,17 @@ export const AdminContentPage: React.FC = () => {
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState('');
   const [newImage, setNewImage] = useState('');
+
+  // Banner slider management state
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
+  const [editingBannerId, setEditingBannerId] = useState<string | null>(null);
+  const [bannerTitle, setBannerTitle] = useState('');
+  const [bannerSubtitle, setBannerSubtitle] = useState('');
+  const [bannerBadge, setBannerBadge] = useState('');
+  const [bannerImage, setBannerImage] = useState('');
+  const [bannerButtonText, setBannerButtonText] = useState('Lihat Seluruh Produk');
+  const [bannerLinkUrl, setBannerLinkUrl] = useState('/produk');
+  const [bannerActive, setBannerActive] = useState(true);
 
   const loadData = () => {
     setContent(repos.settings.getContent());
@@ -274,6 +293,153 @@ export const AdminContentPage: React.FC = () => {
     });
   };
 
+  // Banner Slider Handlers
+  const handleOpenAddBanner = () => {
+    setEditingBannerId(null);
+    setBannerTitle('');
+    setBannerSubtitle('');
+    setBannerBadge('Panggangan Segar Dapur Samarinda');
+    setBannerImage('');
+    setBannerButtonText('Lihat Seluruh Produk');
+    setBannerLinkUrl('/produk');
+    setBannerActive(true);
+    setBannerModalOpen(true);
+  };
+
+  const handleOpenEditBanner = (b: BannerItem) => {
+    setEditingBannerId(b.id);
+    setBannerTitle(b.title || '');
+    setBannerSubtitle(b.subtitle || '');
+    setBannerBadge(b.badge || '');
+    setBannerImage(b.imageUrl || '');
+    setBannerButtonText(b.buttonText || 'Lihat Seluruh Produk');
+    setBannerLinkUrl(b.linkUrl || '/produk');
+    setBannerActive(b.active !== false);
+    setBannerModalOpen(true);
+  };
+
+  const handleSaveBannerModal = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!content) return;
+    if (!bannerImage) {
+      addToast('Foto banner wajib diunggah atau diisi URL-nya.', 'warning');
+      return;
+    }
+    if (!bannerTitle.trim()) {
+      addToast('Judul banner wajib diisi.', 'warning');
+      return;
+    }
+
+    const currentBanners = [...(content.banners || [])];
+
+    if (editingBannerId) {
+      const updatedBanners = currentBanners.map(b =>
+        b.id === editingBannerId
+          ? {
+              ...b,
+              title: bannerTitle.trim(),
+              subtitle: bannerSubtitle.trim(),
+              badge: bannerBadge.trim(),
+              imageUrl: bannerImage,
+              buttonText: bannerButtonText.trim(),
+              linkUrl: bannerLinkUrl.trim() || '/produk',
+              active: bannerActive,
+            }
+          : b
+      );
+      const updatedContent = { ...content, banners: updatedBanners };
+      setContent(updatedContent);
+      repos.settings.saveContent(updatedContent);
+      window.dispatchEvent(new Event('bcc-settings-updated'));
+      addToast('Slide banner berhasil diperbarui!', 'success');
+    } else {
+      const newBanner: BannerItem = {
+        id: 'banner-' + Date.now(),
+        title: bannerTitle.trim(),
+        subtitle: bannerSubtitle.trim(),
+        badge: bannerBadge.trim(),
+        imageUrl: bannerImage,
+        buttonText: bannerButtonText.trim(),
+        linkUrl: bannerLinkUrl.trim() || '/produk',
+        active: bannerActive,
+        sortOrder: currentBanners.length + 1,
+      };
+      const updatedContent = { ...content, banners: [...currentBanners, newBanner] };
+      setContent(updatedContent);
+      repos.settings.saveContent(updatedContent);
+      window.dispatchEvent(new Event('bcc-settings-updated'));
+      addToast('Slide banner baru berhasil ditambahkan!', 'success');
+    }
+
+    setBannerModalOpen(false);
+  };
+
+  const handleDeleteBanner = (id: string) => {
+    if (!content) return;
+    if (!window.confirm('Apakah Anda yakin ingin menghapus slide banner ini?')) return;
+    const updatedBanners = (content.banners || []).filter(b => b.id !== id);
+    const updatedContent = { ...content, banners: updatedBanners };
+    setContent(updatedContent);
+    repos.settings.saveContent(updatedContent);
+    window.dispatchEvent(new Event('bcc-settings-updated'));
+    addToast('Slide banner berhasil dihapus!', 'info');
+  };
+
+  const handleToggleBannerActive = (id: string) => {
+    if (!content) return;
+    const updatedBanners = (content.banners || []).map(b =>
+      b.id === id ? { ...b, active: !b.active } : b
+    );
+    const updatedContent = { ...content, banners: updatedBanners };
+    setContent(updatedContent);
+    repos.settings.saveContent(updatedContent);
+    window.dispatchEvent(new Event('bcc-settings-updated'));
+  };
+
+  const handleMoveBanner = (index: number, direction: 'up' | 'down') => {
+    if (!content) return;
+    const list = [...(content.banners || [])];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= list.length) return;
+    const temp = list[index];
+    list[index] = list[targetIndex];
+    list[targetIndex] = temp;
+    const updatedContent = { ...content, banners: list };
+    setContent(updatedContent);
+    repos.settings.saveContent(updatedContent);
+    window.dispatchEvent(new Event('bcc-settings-updated'));
+  };
+
+  const handleBannerModalImageFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const compressed = await compressImageFile(file, 1200, 0.82);
+      setBannerImage(compressed);
+      addToast('Foto banner berhasil diunggah & dikompresi otomatis!', 'info');
+    } catch {
+      addToast('Gagal memproses gambar. Pastikan format file adalah JPG/PNG.', 'error');
+    }
+  };
+
+  const handleDirectBannerImageUpload = async (bannerId: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !content) return;
+    try {
+      const compressed = await compressImageFile(file, 1200, 0.82);
+      const updatedBanners = (content.banners || []).map(b =>
+        b.id === bannerId ? { ...b, imageUrl: compressed } : b
+      );
+      const updatedContent = { ...content, banners: updatedBanners };
+      setContent(updatedContent);
+      repos.settings.saveContent(updatedContent);
+      window.dispatchEvent(new Event('bcc-settings-updated'));
+      addToast('Foto banner berhasil diganti seketika!', 'success');
+    } catch {
+      addToast('Gagal mengganti foto banner.', 'error');
+    }
+  };
+
   // Category Photo Handlers
   const handleUploadCategoryImage = async (catId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -429,16 +595,18 @@ export const AdminContentPage: React.FC = () => {
   };
 
   const handleDeleteGallery = async (id: string) => {
+    if (!window.confirm('Apakah Anda yakin ingin menghapus foto ini dari galeri?')) {
+      return;
+    }
     try {
       await indexedDBStorage.removeItem(id);
     } catch (e) {
       console.warn('Failed to remove from indexedDB:', e);
     }
     repos.settings.deleteGalleryItem(id);
-    setGallery(prev => prev.filter(g => g.id !== id));
+    setGallery(repos.settings.getGallery());
     window.dispatchEvent(new Event('bcc-settings-updated'));
     addToast('Foto berhasil dihapus dari galeri.', 'info');
-    loadData();
     indexedDBStorage.getCapacityEstimate().then(setStorageInfo);
   };
 
@@ -619,6 +787,24 @@ export const AdminContentPage: React.FC = () => {
           Lompat ke Pengaturan:
         </span>
         <a
+          href="#sec-slider"
+          style={{
+            fontSize: '12px',
+            color: 'var(--brown-900)',
+            backgroundColor: 'var(--gold-100)',
+            border: '1.5px solid var(--gold-500)',
+            padding: '6px 12px',
+            borderRadius: 'var(--radius-full)',
+            textDecoration: 'none',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontWeight: 700,
+          }}
+        >
+          🎡 Slider Banner ({content?.banners?.length || 0})
+        </a>
+        <a
           href="#sec-hero"
           style={{
             fontSize: '12px',
@@ -747,6 +933,388 @@ export const AdminContentPage: React.FC = () => {
       </div>
 
       <form onSubmit={handleSaveContent}>
+        {/* Section 0: Hero Slider & Banner Management */}
+        <div
+          id="sec-slider"
+          style={{
+            backgroundColor: '#FFFFFF',
+            borderRadius: 'var(--radius-lg)',
+            padding: '24px',
+            boxShadow: 'var(--shadow-sm)',
+            marginBottom: '24px',
+            border: '2px solid var(--gold-500)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '16px',
+              borderBottom: '1px solid var(--cream-300)',
+              paddingBottom: '14px',
+              flexWrap: 'wrap',
+              gap: '12px',
+            }}
+          >
+            <div>
+              <h2
+                style={{
+                  fontSize: '19px',
+                  color: 'var(--brown-900)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  margin: 0,
+                  fontWeight: 700,
+                }}
+              >
+                <Sliders size={22} color="var(--gold-600)" /> Kelola Hero Slider & Banner Beranda ({content?.banners?.length || 0})
+              </h2>
+              <span style={{ fontSize: '12.5px', color: 'var(--brown-600)', marginTop: '4px', display: 'block' }}>
+                Ganti foto, tambah slide promo baru, atau atur slide beranda yang tampil bergantian secara otomatis.
+              </span>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleOpenAddBanner}
+              style={{
+                padding: '9px 18px',
+                backgroundColor: 'var(--brown-900)',
+                color: 'var(--gold-500)',
+                border: 'none',
+                borderRadius: 'var(--radius-md)',
+                fontSize: '13px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <Plus size={16} /> Tambah Slide Banner Baru
+            </button>
+          </div>
+
+          {/* Auto-Slide Settings Bar */}
+          <div
+            style={{
+              backgroundColor: 'var(--cream-100)',
+              border: '1px solid var(--cream-300)',
+              borderRadius: 'var(--radius-md)',
+              padding: '12px 18px',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '14px',
+            }}
+          >
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 700, color: 'var(--brown-900)' }}>
+              <input
+                type="checkbox"
+                checked={content?.heroSliderAutoPlay !== false}
+                onChange={e => {
+                  if (!content) return;
+                  const updated = { ...content, heroSliderAutoPlay: e.target.checked };
+                  setContent(updated);
+                  repos.settings.saveContent(updated);
+                  window.dispatchEvent(new Event('bcc-settings-updated'));
+                }}
+                style={{ width: '16px', height: '16px', accentColor: 'var(--gold-600)' }}
+              />
+              <span>Putar Banner Otomatis (Auto-Slide Carousel)</span>
+            </label>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--brown-800)' }}>
+              <span>Pergantian Tiap:</span>
+              <select
+                value={content?.heroSliderInterval || 5}
+                onChange={e => {
+                  if (!content) return;
+                  const updated = { ...content, heroSliderInterval: Number(e.target.value) };
+                  setContent(updated);
+                  repos.settings.saveContent(updated);
+                  window.dispatchEvent(new Event('bcc-settings-updated'));
+                }}
+                style={{
+                  padding: '4px 10px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--cream-300)',
+                  backgroundColor: '#FFFFFF',
+                  fontWeight: 600,
+                  fontSize: '12px',
+                  color: 'var(--brown-900)',
+                }}
+              >
+                <option value={3}>3 Detik (Cepat)</option>
+                <option value={5}>5 Detik (Normal)</option>
+                <option value={7}>7 Detik (Santai)</option>
+                <option value={10}>10 Detik (Lambat)</option>
+              </select>
+            </div>
+          </div>
+
+          {/* List of Banner Slides */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {(content?.banners || []).map((b, idx) => (
+              <div
+                key={b.id}
+                style={{
+                  border: b.active ? '1.5px solid var(--cream-300)' : '1.5px dashed var(--cream-300)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '16px',
+                  backgroundColor: b.active ? '#FFFFFF' : 'var(--cream-50)',
+                  display: 'flex',
+                  gap: '18px',
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  position: 'relative',
+                  opacity: b.active ? 1 : 0.75,
+                  boxShadow: 'var(--shadow-sm)',
+                }}
+              >
+                {/* Banner Thumbnail with Replace Hover Overlay */}
+                <div style={{ position: 'relative', width: '200px', height: '115px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '2px solid var(--cream-300)', flexShrink: 0, backgroundColor: '#000' }}>
+                  <img
+                    src={b.imageUrl}
+                    alt={b.title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '6px',
+                      left: '6px',
+                      backgroundColor: 'rgba(0,0,0,0.7)',
+                      color: 'var(--gold-500)',
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: 'var(--radius-full)',
+                    }}
+                  >
+                    Slide #{idx + 1}
+                  </span>
+
+                  {/* Direct Change Photo Pill */}
+                  <label
+                    title="Klik untuk langsung ganti foto slide ini dari HP/komputer"
+                    style={{
+                      position: 'absolute',
+                      bottom: '6px',
+                      right: '6px',
+                      backgroundColor: 'rgba(59, 36, 22, 0.9)',
+                      color: 'var(--gold-500)',
+                      padding: '3px 8px',
+                      borderRadius: 'var(--radius-sm)',
+                      fontSize: '11px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      border: '1px solid rgba(242, 193, 78, 0.4)',
+                    }}
+                  >
+                    <Upload size={12} /> Ganti Foto
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={e => handleDirectBannerImageUpload(b.id, e)}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                </div>
+
+                {/* Banner Details */}
+                <div style={{ flex: 1, minWidth: '220px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  {b.badge && (
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        color: 'var(--gold-600)',
+                        backgroundColor: 'var(--gold-100)',
+                        padding: '1px 8px',
+                        borderRadius: 'var(--radius-full)',
+                        width: 'fit-content',
+                      }}
+                    >
+                      {b.badge}
+                    </span>
+                  )}
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--brown-900)', margin: '2px 0' }}>
+                    {b.title}
+                  </h4>
+                  {b.subtitle && (
+                    <p style={{ fontSize: '12px', color: 'var(--brown-600)', margin: 0, lineHeight: 1.4 }}>
+                      {b.subtitle}
+                    </p>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px', fontSize: '12px', color: 'var(--text-muted)' }}>
+                    <span>Tombol: <strong>{b.buttonText || 'Lihat Seluruh Produk'}</strong></span>
+                    <span>Tautan: <code style={{ backgroundColor: 'var(--cream-200)', padding: '1px 6px', borderRadius: '4px' }}>{b.linkUrl || '/produk'}</code></span>
+                  </div>
+                </div>
+
+                {/* Actions Toolbar */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                  {/* Move Up */}
+                  <button
+                    type="button"
+                    onClick={() => handleMoveBanner(idx, 'up')}
+                    disabled={idx === 0}
+                    title="Geser ke atas / tampil lebih awal"
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--cream-300)',
+                      backgroundColor: idx === 0 ? 'var(--cream-100)' : '#FFFFFF',
+                      color: idx === 0 ? 'var(--brown-300)' : 'var(--brown-800)',
+                      cursor: idx === 0 ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <MoveUp size={15} />
+                  </button>
+
+                  {/* Move Down */}
+                  <button
+                    type="button"
+                    onClick={() => handleMoveBanner(idx, 'down')}
+                    disabled={idx === (content?.banners?.length || 0) - 1}
+                    title="Geser ke bawah"
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--cream-300)',
+                      backgroundColor: idx === (content?.banners?.length || 0) - 1 ? 'var(--cream-100)' : '#FFFFFF',
+                      color: idx === (content?.banners?.length || 0) - 1 ? 'var(--brown-300)' : 'var(--brown-800)',
+                      cursor: idx === (content?.banners?.length || 0) - 1 ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <MoveDown size={15} />
+                  </button>
+
+                  {/* Toggle Active */}
+                  <button
+                    type="button"
+                    onClick={() => handleToggleBannerActive(b.id)}
+                    title={b.active ? 'Klik untuk nonaktifkan sementara' : 'Klik untuk tampilkan kembali'}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      border: b.active ? '1px solid var(--success-600)' : '1px solid var(--cream-300)',
+                      backgroundColor: b.active ? 'var(--success-100)' : 'var(--cream-100)',
+                      color: b.active ? 'var(--success-600)' : 'var(--brown-600)',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    {b.active ? <CheckCircle2 size={14} /> : <X size={14} />}
+                    <span>{b.active ? 'Aktif' : 'Nonaktif'}</span>
+                  </button>
+
+                  {/* Edit Details */}
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditBanner(b)}
+                    title="Ubah judul, teks, atau tautan slide"
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--cream-300)',
+                      backgroundColor: '#FFFFFF',
+                      color: 'var(--brown-800)',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <Edit2 size={14} />
+                    <span>Edit</span>
+                  </button>
+
+                  {/* Delete Banner */}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteBanner(b.id)}
+                    title="Hapus slide banner ini"
+                    style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--danger-100)',
+                      backgroundColor: 'var(--danger-100)',
+                      color: 'var(--danger-600)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {(content?.banners || []).length === 0 && (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '36px 20px',
+                  backgroundColor: 'var(--cream-50)',
+                  borderRadius: 'var(--radius-md)',
+                  border: '1px dashed var(--cream-300)',
+                }}
+              >
+                <Sliders size={32} color="var(--gold-600)" style={{ margin: '0 auto 8px', display: 'block' }} />
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--brown-900)' }}>
+                  Belum ada slide banner kustom
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--brown-600)', maxWidth: '420px', margin: '4px auto 14px' }}>
+                  Tambahkan slide banner promosi dengan foto kue pesanan, edisi hampers hari raya, atau promo diskon toko Anda.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleOpenAddBanner}
+                  style={{
+                    padding: '8px 18px',
+                    backgroundColor: 'var(--brown-900)',
+                    color: 'var(--gold-500)',
+                    border: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  + Tambah Slide Banner Pertama
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Section 1: Hero & Header Settings */}
         <div id="sec-hero" style={{ backgroundColor: '#FFFFFF', borderRadius: 'var(--radius-lg)', padding: '24px', boxShadow: 'var(--shadow-sm)', marginBottom: '24px' }}>
           <h2 style={{ fontSize: '18px', color: 'var(--brown-900)', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--cream-300)', paddingBottom: '12px' }}>
@@ -2319,6 +2887,210 @@ export const AdminContentPage: React.FC = () => {
                 style={{ padding: '8px 18px', backgroundColor: 'var(--brown-900)', color: 'var(--text-on-dark)', border: 'none', borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
               >
                 Tambahkan
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Add / Edit Banner Slide Modal */}
+      {bannerModalOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+            padding: '20px',
+            overflowY: 'auto',
+          }}
+        >
+          <form
+            onSubmit={handleSaveBannerModal}
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: 'var(--radius-lg)',
+              padding: '24px',
+              maxWidth: '520px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: 'var(--shadow-lg)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid var(--cream-300)', paddingBottom: '10px' }}>
+              <h3 style={{ fontSize: '18px', color: 'var(--brown-900)', margin: 0, fontWeight: 700 }}>
+                {editingBannerId ? 'Edit Slide Banner' : 'Tambah Slide Banner Baru'}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setBannerModalOpen(false)}
+                style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
+              {/* Photo Upload Area */}
+              <div>
+                <label style={{ fontSize: '13px', fontWeight: 700, color: 'var(--brown-900)', display: 'block', marginBottom: '4px' }}>
+                  Foto Banner *
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 16px',
+                      backgroundColor: 'var(--brown-900)',
+                      color: 'var(--gold-500)',
+                      borderRadius: 'var(--radius-md)',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      width: 'fit-content',
+                    }}
+                  >
+                    <Upload size={14} /> Pilih Foto dari HP / Komputer
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleBannerModalImageFile}
+                      style={{ display: 'none' }}
+                    />
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Atau tempel URL gambar (https://...)"
+                    value={bannerImage}
+                    onChange={e => setBannerImage(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 'var(--radius-md)',
+                      border: '1px solid var(--cream-300)',
+                      fontSize: '12px',
+                    }}
+                  />
+                  {bannerImage && (
+                    <div style={{ position: 'relative', width: '100%', height: '160px', borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '2px solid var(--gold-500)', marginTop: '4px' }}>
+                      <img src={bannerImage} alt="Pratinjau Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      <span style={{ position: 'absolute', bottom: '6px', left: '6px', backgroundColor: 'rgba(21, 128, 61, 0.9)', color: '#fff', fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: 'var(--radius-full)' }}>
+                        ✓ Foto Banner Siap
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Title Input */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--brown-800)', display: 'block', marginBottom: '4px' }}>
+                  Judul Banner / Headline *
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Paket Hampers Spesial Hari Raya"
+                  value={bannerTitle}
+                  onChange={e => setBannerTitle(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)', fontSize: '13px' }}
+                />
+              </div>
+
+              {/* Subtitle Input */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--brown-800)', display: 'block', marginBottom: '4px' }}>
+                  Subtitle / Keterangan Singkat
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Contoh: Aneka sajian cookies dan cake lezat dipanggang segar dengan bahan pilihan terbaik."
+                  value={bannerSubtitle}
+                  onChange={e => setBannerSubtitle(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)', fontSize: '13px', resize: 'vertical' }}
+                />
+              </div>
+
+              {/* Badge Input */}
+              <div>
+                <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--brown-800)', display: 'block', marginBottom: '4px' }}>
+                  Lencana Kecil di Atas Judul (Badge)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Contoh: Panggangan Segar Samarinda, Edisi Terbatas, dll."
+                  value={bannerBadge}
+                  onChange={e => setBannerBadge(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)', fontSize: '13px' }}
+                />
+              </div>
+
+              {/* Button Text & Target Link */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--brown-800)', display: 'block', marginBottom: '4px' }}>
+                    Teks Tombol Aksi
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Lihat Seluruh Produk"
+                    value={bannerButtonText}
+                    onChange={e => setBannerButtonText(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)', fontSize: '13px' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '12px', fontWeight: 600, color: 'var(--brown-800)', display: 'block', marginBottom: '4px' }}>
+                    Tautan Tujuan (Link)
+                  </label>
+                  <select
+                    value={bannerLinkUrl}
+                    onChange={e => setBannerLinkUrl(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--cream-300)', fontSize: '13px', backgroundColor: '#FFFFFF' }}
+                  >
+                    <option value="/produk">Katalog Produk (/produk)</option>
+                    <option value="/spesial">Paket Spesial & Hampers (/spesial)</option>
+                    <option value="/galeri">Galeri Toko (/galeri)</option>
+                    <option value="/kategori/cat-cake">Kategori Cake (/kategori/cat-cake)</option>
+                    <option value="/kategori/cat-cookies">Kategori Cookies (/kategori/cat-cookies)</option>
+                    <option value="/kategori/cat-lapis">Kategori Lapis Legit (/kategori/cat-lapis)</option>
+                    <option value="/kategori/cat-custom">Paket Custom (/kategori/cat-custom)</option>
+                    <option value="/cara-memesan">Panduan Cara Pesan (/cara-memesan)</option>
+                    <option value="/tentang-kami">Tentang Kami (/tentang-kami)</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Active Checkbox */}
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', fontWeight: 600, color: 'var(--brown-900)', marginTop: '4px' }}>
+                <input
+                  type="checkbox"
+                  checked={bannerActive}
+                  onChange={e => setBannerActive(e.target.checked)}
+                  style={{ width: '16px', height: '16px', accentColor: 'var(--gold-600)' }}
+                />
+                <span>Aktifkan dan tampilkan slide ini di beranda toko</span>
+              </label>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setBannerModalOpen(false)}
+                style={{ padding: '8px 16px', backgroundColor: 'var(--cream-200)', border: 'none', borderRadius: 'var(--radius-md)', fontSize: '13px', cursor: 'pointer', fontWeight: 600 }}
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                style={{ padding: '8px 20px', backgroundColor: 'var(--brown-900)', color: 'var(--gold-500)', border: 'none', borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
+              >
+                {editingBannerId ? 'Simpan Perubahan' : 'Tambahkan Slide Banner'}
               </button>
             </div>
           </form>
